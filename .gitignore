@@ -1,3 +1,6 @@
+.vscode
+*.sqlite
+
 # Logs
 logs
 *.log

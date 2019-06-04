@@ -1,0 +1,23 @@
+{
+  "name": "reverse-proxy-cache",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "server": "ts-node server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "got": "^9.6.0",
+    "sqlite3": "^4.0.8",
+    "ts-node": "^8.2.0",
+    "typescript": "^3.5.1"
+  },
+  "devDependencies": {
+    "@types/got": "^9.4.4",
+    "@types/http-proxy": "^1.17.0",
+    "@types/sqlite3": "^3.1.5"
+  }
+}
