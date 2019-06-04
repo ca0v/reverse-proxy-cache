@@ -1,12 +1,10 @@
 import got from "got";
-import http from "http";
+import http, { OutgoingHttpHeaders } from "http";
 import sqlite3 from "sqlite3";
 import config from "./serverconfig";
 
 let stringify = (v: Object) => JSON.stringify(v, null, 2);
-
-// rejectUnauthorized
-//process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+let unstringify = (v: string) => JSON.parse(v);
 
 class Db {
 	private db: sqlite3.Database;
@@ -25,7 +23,6 @@ class Db {
 		let cmd = this.db.prepare("SELECT res FROM cache WHERE url=?");
 		let p = new Promise<string | null>((resolve, reject) => {
 			cmd.get(url, (err, row) => {
-				console.log(err, row);
 				err ? reject(err) : resolve(row && row.res);
 			});
 		});
@@ -65,30 +62,39 @@ let server = http.createServer(async (req, res) => {
 
 	let exists = await cache.exists(url);
 	if (!!exists) {
-		res.writeHead(200, { "Content-Type": "text/plain" });
-		res.write(exists);
+		let result = unstringify(exists) as { statusCode: number; headers: OutgoingHttpHeaders; body: string };
+		res.writeHead(result.statusCode, result.headers);
+		res.write(result.body);
 		res.end();
 	} else {
 		let proxyurl = proxy.proxy(url);
-		console.log("proxyurl: ", proxyurl);
-
-		try {
-			if (proxyurl === url) {
-				throw "no configuration found for this endpoint";
-			}
-			let result = await got(proxyurl, {
-				rejectUnauthorized: false
-			});
-			res.writeHead(200, { "Content-Type": "text/plain" });
-			res.write(result.body);
+		if (proxyurl === url) {
+			res.writeHead(500, { "content-type": "text/plain" });
+			res.write("no configuration found for this endpoint");
 			res.end();
-			cache.add(url, result.body);
-		} catch (ex) {
-			console.log(ex);
-			res.writeHead(500, { "Content-Type": "text/plain" });
-			res.write("error");
-			res.end();
+			return;
 		}
+
+		let result = await got(proxyurl, {
+			rejectUnauthorized: false
+		});
+
+		let headers = {
+			"content-type": result.headers["content-type"]
+		};
+
+		res.writeHead(result.statusCode || 200, headers);
+		res.write(result.body);
+		res.end();
+
+		cache.add(
+			url,
+			stringify({
+				statusCode: result.statusCode,
+				headers: headers,
+				body: result.body
+			})
+		);
 	}
 });
 
