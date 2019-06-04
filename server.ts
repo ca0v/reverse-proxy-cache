@@ -1,10 +1,14 @@
+require("dotenv").config();
 import got from "got";
 import http, { OutgoingHttpHeaders } from "http";
 import sqlite3 from "sqlite3";
 import config from "./serverconfig";
 
-let stringify = (v: Object) => JSON.stringify(v, null, 2);
-let unstringify = (v: string) => JSON.parse(v);
+const args = process.argv.slice(2);
+const port = args[0] || process.env.PORT || 9000;
+
+const stringify = (v: Object) => JSON.stringify(v, null, 2);
+const unstringify = (v: string) => JSON.parse(v);
 
 class Db {
 	private db: sqlite3.Database;
@@ -46,9 +50,7 @@ class Proxy {
 	}
 
 	proxy(url: string) {
-		let match = config["reverse-proxy"].find(v => {
-			return url.startsWith(v.baseUri);
-		});
+		let match = config["reverse-proxy"].find(v => url.startsWith(v.baseUri));
 		if (!match) return url;
 		return url.replace(match.baseUri, match.proxyUri);
 	}
@@ -60,21 +62,31 @@ let proxy = new Proxy();
 let server = http.createServer(async (req, res) => {
 	let url = req.url || "";
 
+	if (req.method !== "GET") {
+		res.writeHead(500, { "content-type": "text/plain" });
+		res.write(`unsupported method: ${req.method}`);
+		res.end();
+		return;
+	}
+
 	let exists = await cache.exists(url);
 	if (!!exists) {
 		let result = unstringify(exists) as { statusCode: number; headers: OutgoingHttpHeaders; body: string };
 		res.writeHead(result.statusCode, result.headers);
 		res.write(result.body);
 		res.end();
-	} else {
-		let proxyurl = proxy.proxy(url);
-		if (proxyurl === url) {
-			res.writeHead(500, { "content-type": "text/plain" });
-			res.write("no configuration found for this endpoint");
-			res.end();
-			return;
-		}
+		return;
+	}
 
+	let proxyurl = proxy.proxy(url);
+	if (proxyurl === url) {
+		res.writeHead(500, { "content-type": "text/plain" });
+		res.write("no configuration found for this endpoint");
+		res.end();
+		return;
+	}
+
+	{
 		let result = await got(proxyurl, {
 			rejectUnauthorized: false
 		});
@@ -98,4 +110,5 @@ let server = http.createServer(async (req, res) => {
 	}
 });
 
-server.listen(9000);
+server.listen(port);
+console.log(`listening on ${port}`);

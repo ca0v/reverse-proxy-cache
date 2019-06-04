@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server": "ts-node server.ts"
+    "server": "ts-node server.ts 3000"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^8.0.0",
     "got": "^9.6.0",
     "sqlite3": "^4.0.8",
     "ts-node": "^8.2.0",
