@@ -2,18 +2,29 @@ require("dotenv").config();
 import got from "got";
 import http, { OutgoingHttpHeaders } from "http";
 import sqlite3 from "sqlite3";
-import config from "./serverconfig";
-
-const args = process.argv.slice(2);
-const port = args[0] || process.env.PORT || "9000";
 
 const stringify = (v: Object) => JSON.stringify(v, null, 2);
 const unstringify = (v: string) => JSON.parse(v);
 
+// shape of the configuration (defaults to package.json)
+interface IConfig {
+  "reverse-proxy-cache": {
+    "port": string;
+    "reverse-proxy-db": string;
+    "proxy-pass": Array<{
+      baseUri: string;
+      proxyUri: string;
+    }>
+  }
+}
+
 class Db {
   private db: sqlite3.Database;
-  constructor(fileName = ":memory:") {
-    let db = (this.db = new sqlite3.Database(fileName));
+
+  constructor(config: IConfig) {
+    let dbFile = config["reverse-proxy-cache"]["reverse-proxy-db"];
+    console.log(`loading ${dbFile}`);
+    let db = (this.db = new sqlite3.Database(dbFile));
     db.run(
       "CREATE TABLE cache (url TEXT, res TEXT)",
       () => { },
@@ -45,22 +56,21 @@ class Db {
 }
 
 class Proxy {
-  constructor() {
+  constructor(private config: IConfig) {
     // nothing to do
   }
 
   proxy(url: string) {
-    let match = config["reverse-proxy"].find(v => url.startsWith(v.baseUri));
+    let match = this.config["reverse-proxy-cache"]["proxy-pass"].find(v => url.startsWith(v.baseUri));
     if (!match) return url;
     return url.replace(match.baseUri, match.proxyUri);
   }
 }
 
-function run(args?: { port: string }) {
-  args = args || { port: port };
-  args.port = args.port || port;
-  let cache = new Db(config.cacheName);
-  let proxy = new Proxy();
+function run(config: IConfig) {
+
+  let cache = new Db(config);
+  let proxy = new Proxy(config);
 
   let server = http.createServer(async (req, res) => {
     let url = req.url || "";
@@ -113,8 +123,9 @@ function run(args?: { port: string }) {
     }
   });
 
-  server.listen(args.port);
-  console.log(`listening on ${args.port}`);
+  let port = config["reverse-proxy-cache"].port;
+  server.listen(port);
+  console.log(`listening on ${port}`);
 }
 
 export = run;

@@ -1,2 +1,32 @@
 # reverse-proxy-cache
 Reverse Proxy with Caching to facilitate service oriented unit tests
+
+## Develop
+
+* `npm run server` TODO: restart when source code changes
+ 
+## Install
+
+- `npm install https://github.com/ca0v/reverse-proxy-cache/tarball/v1.0.0`
+
+## Cli
+
+- `npx reverse-proxy-cache`
+
+## Configure
+
+Add a "reverse-proxy-cache" section to your package.json file
+
+```
+// shape of the configuration (defaults to package.json)
+interface IConfig {
+  "reverse-proxy-cache": {
+    "port": string;
+    "reverse-proxy-db": string;
+    "proxy-pass": Array<{
+      baseUri: string;
+      proxyUri: string;
+    }>
+  }
+}
+```
