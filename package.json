@@ -1,10 +1,14 @@
 {
   "name": "reverse-proxy-cache",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "gateway with caching to faciliate testing",
+  "main": "./bin/server.js",
+  "bin": {
+    "reverse-proxy-cache": "./bin/cli.js"
+  },
   "scripts": {
-    "server": "ts-node server.ts 3000"
+    "server": "node ./bin/cli.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -12,13 +16,27 @@
   "dependencies": {
     "dotenv": "^8.0.0",
     "got": "^9.6.0",
-    "sqlite3": "^4.0.8",
-    "ts-node": "^8.2.0",
-    "typescript": "^3.5.1"
+    "sqlite3": "^4.0.8"
   },
   "devDependencies": {
     "@types/got": "^9.4.4",
     "@types/http-proxy": "^1.17.0",
-    "@types/sqlite3": "^3.1.5"
+    "@types/sqlite3": "^3.1.5",
+    "typescript": "^3.5.1"
+  },
+  "reverse-proxy-cache": {
+    "port": "3002",
+    "reverse-proxy-db": "unittest.sqlite",
+    "proxy-pass": [
+      {
+        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+        "baseUri": "/mock/ags",
+        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
+      },
+      {
+        "baseUri": "/mock/geoserver",
+        "proxyUri": "http://localhost:8080/geoserver"
+      }
+    ]
   }
 }
