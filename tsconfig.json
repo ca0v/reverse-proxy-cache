@@ -1,6 +1,7 @@
 {
   "files": [
-    "./server.ts"
+    "./server.ts",
+    "./serverconfig.ts"
   ],
   "compilerOptions": {
     /* Basic Options */
