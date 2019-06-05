@@ -1,10 +1,15 @@
 {
   "name": "reverse-proxy-cache",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "gateway with caching to faciliate testing",
+  "main": "server.ts",
+  "bin": {
+    "reverse-proxy-cache": "./cli.js"
+  },
   "scripts": {
-    "server": "ts-node server.ts 3000"
+    "server": "ts-node server.ts 3000",
+    "build": "tsc",
+    "install": "npm run build"
   },
   "keywords": [],
   "author": "",
