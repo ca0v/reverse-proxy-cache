@@ -67,22 +67,14 @@ class Proxy {
   }
 }
 
-function run(config: IConfig) {
+class Http {
+  constructor(private cache: Db, private proxy: Proxy) {
+  }
 
-  let cache = new Db(config);
-  let proxy = new Proxy(config);
+  public async invokeGet(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+    console.assert(req.method === "GET");
 
-  let server = http.createServer(async (req, res) => {
-    let url = req.url || "";
-
-    if (req.method !== "GET") {
-      res.writeHead(500, { "content-type": "text/plain" });
-      res.write(`unsupported method: ${req.method}`);
-      res.end();
-      return;
-    }
-
-    let exists = await cache.exists(url);
+    let exists = await this.cache.exists(req.url || "");
     if (!!exists) {
       let result = unstringify(exists) as { statusCode: number; headers: OutgoingHttpHeaders; body: string };
       res.writeHead(result.statusCode, result.headers);
@@ -91,16 +83,8 @@ function run(config: IConfig) {
       return;
     }
 
-    let proxyurl = proxy.proxy(url);
-    if (proxyurl === url) {
-      res.writeHead(500, { "content-type": "text/plain" });
-      res.write("no configuration found for this endpoint");
-      res.end();
-      return;
-    }
-
     {
-      let result = await got(proxyurl, {
+      let result = await got(url, {
         rejectUnauthorized: false
       });
 
@@ -112,8 +96,8 @@ function run(config: IConfig) {
       res.write(result.body);
       res.end();
 
-      cache.add(
-        url,
+      this.cache.add(
+        req.url || "",
         stringify({
           statusCode: result.statusCode,
           headers: headers,
@@ -121,6 +105,81 @@ function run(config: IConfig) {
         })
       );
     }
+
+  }
+
+  public async invokePost(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+    console.assert(req.method === "POST");
+    let key = {
+      url: req.url,
+      request: ""
+    }
+    // collect the request body
+    req.on("data", chunk => key.request += chunk);
+
+    // check the cache, invoke if missing
+    req.on("end", async () => {
+      console.log("request received", key.request);
+      let cachedata = await this.cache.exists(stringify(key));
+      // found in cache, response with cached data
+      if (!!cachedata) {
+        console.log("request found in cache", cachedata);
+        return;
+      }
+
+      // invoke actual service, cache the response
+      console.log("invoke actual service");
+      got.post(url, {
+        body: key.request
+      }).then(value => {
+        console.log("response received", value.statusCode, value.statusMessage, value.body, value.headers);
+        res.writeHead(value.statusCode || 200, value.statusMessage, {
+          "content-type": value.headers["content-type"]
+        });
+        res.write(value.body);
+        res.end();
+      });
+    });
+  }
+}
+
+
+function run(config: IConfig) {
+
+  if (!config["reverse-proxy-cache"]) throw "missing configuration: reverse-proxy-cache not found";
+  if (!config["reverse-proxy-cache"].port) throw "missing configuration: reverse-proxy-cache/port not found";
+  if (!config["reverse-proxy-cache"]["reverse-proxy-db"]) throw "missing configuration: reverse-proxy-cache/reverse-proxy-db not found";
+  if (!config["reverse-proxy-cache"]["proxy-pass"]) throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
+
+  let cache = new Db(config);
+  let proxy = new Proxy(config);
+  let helper = new Http(cache, proxy);
+
+  let server = http.createServer(async (req, res) => {
+
+    let url = req.url || "";
+    let proxyurl = proxy.proxy(url);
+    if (proxyurl === url) {
+      res.writeHead(500, { "content-type": "text/plain" });
+      res.write("no configuration found for this endpoint");
+      res.end();
+      return;
+    }
+
+    switch (req.method) {
+      case "GET":
+        helper.invokeGet(proxyurl, req, res);
+        break;
+      case "POST":
+        helper.invokePost(proxyurl, req, res);
+        break;
+      default:
+        res.writeHead(500, { "content-type": "text/plain" });
+        res.write(`unsupported method: ${req.method}`);
+        res.end();
+        break;
+    }
+
   });
 
   let port = config["reverse-proxy-cache"].port;
