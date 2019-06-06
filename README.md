@@ -33,5 +33,5 @@ interface IConfig {
 
 ## History
 
-v1.0.0 - supports GET only
-v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
+- v1.0.0 - supports GET only
+- v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
