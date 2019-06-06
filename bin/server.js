@@ -43,10 +43,17 @@ var http_1 = __importDefault(require("http"));
 var sqlite3_1 = __importDefault(require("sqlite3"));
 var stringify = function (v) { return JSON.stringify(v, null, 2); };
 var unstringify = function (v) { return JSON.parse(v); };
+var verbose = function () {
+    var v = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        v[_i] = arguments[_i];
+    }
+    return console.log.apply(console, v);
+};
 var Db = /** @class */ (function () {
     function Db(config) {
         var dbFile = config["reverse-proxy-cache"]["reverse-proxy-db"];
-        console.log("loading " + dbFile);
+        verbose("loading " + dbFile);
         var db = (this.db = new sqlite3_1.default.Database(dbFile));
         db.run("CREATE TABLE cache (url TEXT, res TEXT)", function () { }, function (err) {
             console.warn(err);
@@ -60,6 +67,7 @@ var Db = /** @class */ (function () {
                 p = new Promise(function (resolve, reject) {
                     cmd.get(url, function (err, row) {
                         err ? reject(err) : resolve(row && row.res);
+                        verbose(row ? "hit" : "miss");
                     });
                 });
                 return [2 /*return*/, p];
@@ -67,6 +75,7 @@ var Db = /** @class */ (function () {
         });
     };
     Db.prototype.add = function (url, res) {
+        verbose("add");
         var cmd = this.db.prepare("INSERT INTO cache VALUES (?, ?)");
         var p = new Promise(function (resolve, reject) {
             cmd.run(url, res, function (err) {
@@ -90,61 +99,214 @@ var Proxy = /** @class */ (function () {
     };
     return Proxy;
 }());
-function run(config) {
-    var _this = this;
-    var cache = new Db(config);
-    var proxy = new Proxy(config);
-    var server = http_1.default.createServer(function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-        var url, exists, result, proxyurl, result, headers;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    url = req.url || "";
-                    if (req.method !== "GET") {
-                        res.writeHead(500, { "content-type": "text/plain" });
-                        res.write("unsupported method: " + req.method);
-                        res.end();
-                        return [2 /*return*/];
-                    }
-                    return [4 /*yield*/, cache.exists(url)];
-                case 1:
-                    exists = _a.sent();
-                    if (!!exists) {
-                        result = unstringify(exists);
-                        res.writeHead(result.statusCode, result.headers);
+var Http = /** @class */ (function () {
+    function Http(cache, proxy) {
+        this.cache = cache;
+        this.proxy = proxy;
+    }
+    Http.prototype.invokeDelete = function (url, req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.assert(req.method === "DELETE");
+                return [2 /*return*/, this.invoke(url, req, res)];
+            });
+        });
+    };
+    Http.prototype.invokeOptions = function (url, req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.assert(req.method === "OPTIONS");
+                return [2 /*return*/, this.invoke(url, req, res)];
+            });
+        });
+    };
+    Http.prototype.invokeGet = function (url, req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.assert(req.method === "GET");
+                return [2 /*return*/, this.invoke(url, req, res)];
+            });
+        });
+    };
+    Http.prototype.invokePut = function (url, req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.assert(req.method === "PUT");
+                return [2 /*return*/, this.invoke(url, req, res)];
+            });
+        });
+    };
+    Http.prototype.invoke = function (url, req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var cacheKey, cachedata, result, result, headers, ex_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        cacheKey = stringify({
+                            method: req.method,
+                            url: req.url || ""
+                        });
+                        return [4 /*yield*/, this.cache.exists(cacheKey)];
+                    case 1:
+                        cachedata = _a.sent();
+                        if (!!cachedata) {
+                            result = unstringify(cachedata);
+                            res.writeHead(result.statusCode, result.statusMessage, result.headers);
+                            res.write(result.body);
+                            res.end();
+                            return [2 /*return*/];
+                        }
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, got_1.default(url, {
+                                method: req.method,
+                                rejectUnauthorized: false
+                            })];
+                    case 3:
+                        result = _a.sent();
+                        headers = {
+                            "content-type": result.headers["content-type"]
+                        };
+                        res.writeHead(result.statusCode || 200, headers);
                         res.write(result.body);
                         res.end();
-                        return [2 /*return*/];
-                    }
-                    proxyurl = proxy.proxy(url);
-                    if (proxyurl === url) {
-                        res.writeHead(500, { "content-type": "text/plain" });
-                        res.write("no configuration found for this endpoint");
-                        res.end();
-                        return [2 /*return*/];
-                    }
-                    return [4 /*yield*/, got_1.default(proxyurl, {
-                            rejectUnauthorized: false
-                        })];
-                case 2:
-                    result = _a.sent();
-                    headers = {
-                        "content-type": result.headers["content-type"]
-                    };
-                    res.writeHead(result.statusCode || 200, headers);
-                    res.write(result.body);
-                    res.end();
-                    cache.add(url, stringify({
-                        statusCode: result.statusCode,
-                        headers: headers,
-                        body: result.body
-                    }));
-                    return [2 /*return*/];
+                        this.cache.add(cacheKey, stringify({
+                            statusCode: result.statusCode,
+                            statusMessage: result.statusMessage,
+                            headers: headers,
+                            body: result.body
+                        }));
+                        return [3 /*break*/, 5];
+                    case 4:
+                        ex_1 = _a.sent();
+                        this.failure(ex_1, res);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Http.prototype.failure = function (ex, res) {
+        console.error("FAILURE!", ex);
+        res.writeHead(500, { "content-type": "text/plain" });
+        res.end();
+    };
+    Http.prototype.invokePost = function (url, req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var cacheKey;
+            var _this = this;
+            return __generator(this, function (_a) {
+                console.assert(req.method === "POST");
+                cacheKey = {
+                    url: req.url,
+                    method: req.method,
+                    request: ""
+                };
+                // collect the request body
+                req.on("data", function (chunk) { return cacheKey.request += chunk; });
+                // check the cache, invoke if missing
+                req.on("end", function () { return __awaiter(_this, void 0, void 0, function () {
+                    var cachedata, value_1, value, headers;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, this.cache.exists(stringify(cacheKey))];
+                            case 1:
+                                cachedata = _a.sent();
+                                // found in cache, response with cached data
+                                if (!!cachedata) {
+                                    value_1 = unstringify(cachedata);
+                                    res.writeHead(value_1.statusCode || 200, value_1.statusMessage, value_1.headers);
+                                    res.write(value_1.body);
+                                    res.end();
+                                    return [2 /*return*/];
+                                }
+                                return [4 /*yield*/, got_1.default.post(url, {
+                                        rejectUnauthorized: false,
+                                        body: cacheKey.request
+                                    })];
+                            case 2:
+                                value = _a.sent();
+                                headers = {
+                                    "content-type": value.headers["content-type"]
+                                };
+                                res.writeHead(value.statusCode || 200, value.statusMessage, headers);
+                                res.write(value.body);
+                                res.end();
+                                this.cache.add(stringify(cacheKey), stringify({
+                                    statusCode: value.statusCode,
+                                    statusMessage: value.statusMessage,
+                                    body: value.body,
+                                    headers: headers
+                                }));
+                                return [2 /*return*/];
+                        }
+                    });
+                }); });
+                return [2 /*return*/];
+            });
+        });
+    };
+    return Http;
+}());
+function run(config) {
+    var _this = this;
+    if (!config["reverse-proxy-cache"])
+        throw "missing configuration: reverse-proxy-cache not found";
+    if (!config["reverse-proxy-cache"].port)
+        throw "missing configuration: reverse-proxy-cache/port not found";
+    if (!config["reverse-proxy-cache"]["reverse-proxy-db"])
+        throw "missing configuration: reverse-proxy-cache/reverse-proxy-db not found";
+    if (!config["reverse-proxy-cache"]["proxy-pass"])
+        throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
+    var cache = new Db(config);
+    var proxy = new Proxy(config);
+    var helper = new Http(cache, proxy);
+    var server = http_1.default.createServer(function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var url, proxyurl;
+        return __generator(this, function (_a) {
+            url = req.url || "";
+            proxyurl = proxy.proxy(url);
+            if (proxyurl === url) {
+                res.writeHead(500, { "content-type": "text/plain" });
+                res.write("no configuration found for this endpoint");
+                res.end();
+                return [2 /*return*/];
             }
+            verbose(proxyurl);
+            try {
+                switch (req.method) {
+                    case "DELETE":
+                        helper.invokeDelete(proxyurl, req, res);
+                        break;
+                    case "GET":
+                        helper.invokeGet(proxyurl, req, res);
+                        break;
+                    case "OPTIONS":
+                        helper.invokeOptions(proxyurl, req, res);
+                        break;
+                    case "POST":
+                        helper.invokePost(proxyurl, req, res);
+                        break;
+                    case "PUT":
+                        helper.invokePut(proxyurl, req, res);
+                        break;
+                    default:
+                        res.writeHead(500, "unsupported method: " + req.method, { "content-type": "text/plain" });
+                        res.end();
+                        break;
+                }
+            }
+            catch (ex) {
+                console.error(ex);
+                res.writeHead(500, "" + (ex + "").substring(0, 16), { "content-type": "text/plain" });
+                res.end();
+            }
+            return [2 /*return*/];
         });
     }); });
     var port = config["reverse-proxy-cache"].port;
     server.listen(port);
-    console.log("listening on " + port);
+    verbose("listening on " + port);
 }
 module.exports = run;
