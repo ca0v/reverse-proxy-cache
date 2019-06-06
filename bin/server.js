@@ -147,30 +147,37 @@ var Http = /** @class */ (function () {
                 req.on("data", function (chunk) { return key.request += chunk; });
                 // check the cache, invoke if missing
                 req.on("end", function () { return __awaiter(_this, void 0, void 0, function () {
-                    var cachedata;
+                    var cachedata, value;
+                    var _this = this;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
-                            case 0:
-                                console.log("request received", key.request);
-                                return [4 /*yield*/, this.cache.exists(stringify(key))];
+                            case 0: return [4 /*yield*/, this.cache.exists(stringify(key))];
                             case 1:
                                 cachedata = _a.sent();
                                 // found in cache, response with cached data
                                 if (!!cachedata) {
-                                    console.log("request found in cache", cachedata);
+                                    value = unstringify(cachedata);
+                                    res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
+                                    res.write(value.body);
+                                    res.end();
                                     return [2 /*return*/];
                                 }
                                 // invoke actual service, cache the response
-                                console.log("invoke actual service");
                                 got_1.default.post(url, {
                                     body: key.request
                                 }).then(function (value) {
-                                    console.log("response received", value.statusCode, value.statusMessage, value.body, value.headers);
-                                    res.writeHead(value.statusCode || 200, value.statusMessage, {
+                                    var headers = {
                                         "content-type": value.headers["content-type"]
-                                    });
+                                    };
+                                    res.writeHead(value.statusCode || 200, value.statusMessage, headers);
                                     res.write(value.body);
                                     res.end();
+                                    _this.cache.add(stringify(key), stringify({
+                                        statusCode: value.statusCode,
+                                        statusMessage: value.statusMessage,
+                                        body: value.body,
+                                        headers: headers
+                                    }));
                                 });
                                 return [2 /*return*/];
                         }

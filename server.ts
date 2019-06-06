@@ -119,25 +119,32 @@ class Http {
 
     // check the cache, invoke if missing
     req.on("end", async () => {
-      console.log("request received", key.request);
       let cachedata = await this.cache.exists(stringify(key));
       // found in cache, response with cached data
       if (!!cachedata) {
-        console.log("request found in cache", cachedata);
+        let value = unstringify(cachedata) as { statusCode: number; statusMessage: string, headers: OutgoingHttpHeaders; body: string };
+        res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
+        res.write(value.body);
+        res.end();
         return;
       }
 
       // invoke actual service, cache the response
-      console.log("invoke actual service");
       got.post(url, {
         body: key.request
       }).then(value => {
-        console.log("response received", value.statusCode, value.statusMessage, value.body, value.headers);
-        res.writeHead(value.statusCode || 200, value.statusMessage, {
+        let headers = {
           "content-type": value.headers["content-type"]
-        });
+        };
+        res.writeHead(value.statusCode || 200, value.statusMessage, headers);
         res.write(value.body);
         res.end();
+        this.cache.add(stringify(key), stringify({
+          statusCode: value.statusCode,
+          statusMessage: value.statusMessage,
+          body: value.body,
+          headers: headers
+        }))
       });
     });
   }
