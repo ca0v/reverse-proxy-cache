@@ -1,3 +1,5 @@
+import "./cache-processor/ignore-callback-querystring";
+
 require("dotenv").config();
 import got from "got";
 import http, { OutgoingHttpHeaders } from "http";
@@ -13,10 +15,17 @@ interface IConfig {
     "port": string;
     "reverse-proxy-db": string;
     "proxy-pass": Array<{
+      "about": string;
       baseUri: string;
       proxyUri: string;
+      "cache-processor": string;
     }>
   }
+}
+
+type ProxyInfo = {
+  url: string;
+  key?: string;
 }
 
 class Db {
@@ -61,12 +70,28 @@ class Db {
 class Proxy {
   constructor(private config: IConfig) {
     // nothing to do
+    this.config["reverse-proxy-cache"]["proxy-pass"].forEach(v => {
+      if (v["cache-processor"]) {
+        console.log(v["cache-processor"]);
+      }
+    });
   }
 
-  proxy(url: string) {
+  proxy(url: string): ProxyInfo {
     let match = this.config["reverse-proxy-cache"]["proxy-pass"].find(v => url.startsWith(v.baseUri));
-    if (!match) return url;
-    return url.replace(match.baseUri, match.proxyUri);
+    if (!match) return { url };
+    let actualUrl = url.replace(match.baseUri, match.proxyUri);
+    let cacheKey = actualUrl;
+    if (match["cache-processor"]) {
+      match["cache-processor"].split(",").forEach(mid => {
+        let processor = require(`./cache-processor/${mid}`);
+        cacheKey = processor(cacheKey);
+      });
+    }
+    return {
+      url: actualUrl,
+      key: cacheKey
+    };
   }
 }
 
@@ -74,31 +99,31 @@ class Http {
   constructor(private cache: Db, private proxy: Proxy) {
   }
 
-  public async invokeDelete(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+  public async invokeDelete(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "DELETE");
     return this.invoke(url, req, res);
   }
 
-  public async invokeOptions(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+  public async invokeOptions(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "OPTIONS");
     return this.invoke(url, req, res);
   }
 
-  public async invokeGet(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+  public async invokeGet(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "GET");
     return this.invoke(url, req, res);
   }
 
-  public async invokePut(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+  public async invokePut(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "PUT");
     return this.invoke(url, req, res);
   }
 
-  private async invoke(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+  private async invoke(proxyInfo: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
 
     let cacheKey = stringify({
       method: req.method,
-      url: req.url || ""
+      url: proxyInfo.key || proxyInfo.url || req.url || ""
     });
 
     let cachedata = await this.cache.exists(cacheKey);
@@ -109,6 +134,11 @@ class Http {
         headers: OutgoingHttpHeaders;
         body: string;
       };
+      result.headers['Access-Control-Allow-Credentials'] = "true";
+      result.headers['Access-Control-Allow-Origin'] = "*";
+      result.headers['Access-Control-Allow-Methods'] = req.method;
+      console.log("headers", req.headers, result.headers);
+
       res.writeHead(result.statusCode, result.statusMessage, result.headers);
       res.write(result.body);
       res.end();
@@ -116,13 +146,17 @@ class Http {
     }
 
     try {
-      let result = await got(url, {
+      let result = await got(proxyInfo.url, {
         method: req.method,
         rejectUnauthorized: false
       });
 
       let headers = {
-        "content-type": result.headers["content-type"]
+        "content-type": result.headers["content-type"],
+        'Access-Control-Allow-Credentials': "true",
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET',
+        'Access-Control-Allow-Headers': 'application/json'
       };
 
       res.writeHead(result.statusCode || 200, headers);
@@ -150,7 +184,7 @@ class Http {
     res.end();
   }
 
-  public async invokePost(url: string, req: http.IncomingMessage, res: http.ServerResponse) {
+  public async invokePost(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "POST");
     let cacheKey = {
       url: req.url,
@@ -173,7 +207,7 @@ class Http {
       }
 
       // invoke actual service, cache the response
-      let value = await got.post(url, {
+      let value = await got.post(url.url, {
         rejectUnauthorized: false,
         body: cacheKey.request
       });
@@ -211,14 +245,14 @@ function run(config: IConfig) {
 
     let url = req.url || "";
     let proxyurl = proxy.proxy(url);
-    if (proxyurl === url) {
+    if (proxyurl.url === url) {
       res.writeHead(500, { "content-type": "text/plain" });
       res.write("no configuration found for this endpoint");
       res.end();
       return;
     }
 
-    verbose(proxyurl);
+    verbose(proxyurl.url);
 
     try {
       switch (req.method) {

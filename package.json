@@ -31,6 +31,7 @@
       {
         "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
         "baseUri": "/mock/ags",
+        "cache-processor": "ignore-callback-querystring",
         "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
       },
       {
