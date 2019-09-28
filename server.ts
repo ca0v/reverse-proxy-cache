@@ -1,4 +1,5 @@
-import "./cache-processor/ignore-callback-querystring";
+import * as defaultProcessor from "./cache-processor/ignore-callback-querystring";
+type Processor = typeof defaultProcessor;
 
 require("dotenv").config();
 import got from "got";
@@ -26,6 +27,7 @@ interface IConfig {
 type ProxyInfo = {
   url: string;
   key?: string;
+  processors?: Processor[]
 }
 
 class Db {
@@ -67,12 +69,16 @@ class Db {
   }
 }
 
+
 class Proxy {
   constructor(private config: IConfig) {
     // nothing to do
     this.config["reverse-proxy-cache"]["proxy-pass"].forEach(v => {
       if (v["cache-processor"]) {
-        console.log(v["cache-processor"]);
+        v["cache-processor"].split(",").forEach(mid => {
+          let processor = <Processor>require(`./cache-processor/${mid}`);
+          processor.test();
+        })
       }
     });
   }
@@ -83,14 +89,20 @@ class Proxy {
     let actualUrl = url.replace(match.baseUri, match.proxyUri);
     let cacheKey = actualUrl;
     if (match["cache-processor"]) {
-      match["cache-processor"].split(",").forEach(mid => {
-        let processor = require(`./cache-processor/${mid}`);
-        cacheKey = processor(cacheKey);
+      let processors = match["cache-processor"].split(",").map(mid => {
+        let processor: Processor = require(`./cache-processor/${mid}`);
+        cacheKey = processor.computeCacheKey(cacheKey);
+        return processor;
       });
+      return {
+        url: actualUrl,
+        key: cacheKey,
+        processors: processors
+      };
     }
     return {
       url: actualUrl,
-      key: cacheKey
+      key: cacheKey,
     };
   }
 }
@@ -134,6 +146,11 @@ class Http {
         headers: OutgoingHttpHeaders;
         body: string;
       };
+
+      if (!!proxyInfo.processors) {
+        proxyInfo.processors.forEach(processor => result.body = processor.processResponse(proxyInfo.url, result.body));
+      }
+
       result.headers['Access-Control-Allow-Credentials'] = "true";
       result.headers['Access-Control-Allow-Origin'] = "*";
       result.headers['Access-Control-Allow-Methods'] = req.method;
