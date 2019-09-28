@@ -7,6 +7,7 @@
     "reverse-proxy-cache": "./bin/cli.js"
   },
   "scripts": {
+    "test": "mocha ./bin/test/test.js",
     "server": "node ./bin/cli.js",
     "build": "tsc"
   },
@@ -21,7 +22,9 @@
   "devDependencies": {
     "@types/got": "^9.4.4",
     "@types/http-proxy": "^1.17.0",
+    "@types/mocha": "^5.2.7",
     "@types/sqlite3": "^3.1.5",
+    "mocha": "^6.2.0",
     "typescript": "^3.5.1"
   },
   "reverse-proxy-cache": {

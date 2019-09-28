@@ -1,5 +1,6 @@
 class Processor {
-    private regex = /[?&]callback=([^&]*)/;
+    regex = /[?&]callback=([^&]*)/;
+    regexFn = /[^(]*\(/; // foo(
 
     computeCacheKey(request: string) {
         return request.replace(this.regex, "");
@@ -7,21 +8,15 @@ class Processor {
 
     processResponse(request: string, response: string) {
         let cbOriginalName = this.regex.exec(request);
-        return !cbOriginalName ? response : response.replace(/[^(]*\(/, cbOriginalName[1] + "(");
+        if (!cbOriginalName) {
+            if (!this.regexFn.test(response)) return response;
+            response = response.replace(this.regexFn, "");
+            response = response.substring(0, response.length - 2); // remove the ");"
+            return response;
+        }
+        return response.replace(this.regexFn, cbOriginalName[1] + "(");
     }
 
-    test() {
-
-        [{ out: "some&callback=2", in: "some?callback=1&callback=2" }].forEach(test => {
-            let result = this.computeCacheKey(test.in);
-            console.assert(test.out === result, `${result} != ${test.out}`);
-        });
-
-        [{ out: "cb2({});", in: { request: "some?callback=cb2", response: "cb1({});" } }].forEach(test => {
-            let result = this.processResponse(test.in.request, test.in.response);
-            console.assert(test.out === result, `${result} != ${test.out}`);
-        });
-    }
 }
 
 let processor = new Processor();

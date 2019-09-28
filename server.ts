@@ -73,14 +73,6 @@ class Db {
 class Proxy {
   constructor(private config: IConfig) {
     // nothing to do
-    this.config["reverse-proxy-cache"]["proxy-pass"].forEach(v => {
-      if (v["cache-processor"]) {
-        v["cache-processor"].split(",").forEach(mid => {
-          let processor = <Processor>require(`./cache-processor/${mid}`);
-          processor.test();
-        })
-      }
-    });
   }
 
   proxy(url: string): ProxyInfo {
