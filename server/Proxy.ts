@@ -22,7 +22,7 @@ export class Proxy {
         let cacheKey = actualUrl;
         if (match["cache-processor"]) {
             let processors = match["cache-processor"].split(",").map(mid => {
-                let processor: Processor = require(`./cache-processor/${mid}`);
+                let processor: Processor = require(`../cache-processor/${mid}`);
                 cacheKey = processor.computeCacheKey(cacheKey);
                 return processor;
             });

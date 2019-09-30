@@ -3,8 +3,8 @@ import * as http from "http";
 import { Db } from "./server/db";
 import { IConfig } from "./server/IConfig";
 import { verbose } from "./server/stringify";
-import { Proxy } from "./server/Proxy";
-import { Http } from "./server/Http";
+import { Proxy } from "./server/proxy";
+import { Http } from "./server/http";
 
 function run(config: IConfig) {
 

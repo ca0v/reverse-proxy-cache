@@ -36,6 +36,31 @@
     "reverse-proxy-db": "unittest.sqlite",
     "proxy-pass": [
       {
+        "about": "requests to /jsapi/3.29/esri redirect to https://js.arcgis.com/3.29/esri",
+        "baseUri": "/mock/jsapi/3.29/esri",
+        "proxyUri": "https://js.arcgis.com/3.29/esri"
+      },
+      {
+        "about": "requests intercept dojo",
+        "baseUri": "/mock/jsapi/3.29/dojo",
+        "proxyUri": "https://js.arcgis.com/3.29/dojo"
+      },
+      {
+        "about": "requests intercept dojo",
+        "baseUri": "/mock/jsapi/3.29/dojox",
+        "proxyUri": "https://js.arcgis.com/3.29/dojox"
+      },
+      {
+        "about": "requests intercept xstyle",
+        "baseUri": "/mock/jsapi/3.29/xstyle",
+        "proxyUri": "https://js.arcgis.com/3.29/xstyle"
+      },
+      {
+        "about": "requests intercept dojo",
+        "baseUri": "/mock/jsapi/3.29/dijit",
+        "proxyUri": "https://js.arcgis.com/3.29/dijit"
+      },
+      {
         "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
         "baseUri": "/mock/ags",
         "cache-processor": "ignore-callback-querystring",

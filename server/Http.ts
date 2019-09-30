@@ -1,27 +1,33 @@
-import got from "got";
+import * as got from "got";
 import http, { OutgoingHttpHeaders } from "http";
 import { Db } from "./db";
 import { stringify, unstringify } from "./stringify";
-import { Proxy, ProxyInfo } from "./Proxy";
+import { Proxy, ProxyInfo } from "./proxy";
+
 export class Http {
   constructor(private cache: Db, private proxy: Proxy) {
   }
+
   public async invokeDelete(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "DELETE");
     return this.invoke(url, req, res);
   }
+
   public async invokeOptions(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "OPTIONS");
     return this.invoke(url, req, res);
   }
+
   public async invokeGet(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "GET");
     return this.invoke(url, req, res);
   }
+
   public async invokePut(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "PUT");
     return this.invoke(url, req, res);
   }
+
   private async invoke(proxyInfo: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     let cacheKey = stringify({
       method: req.method,
@@ -73,11 +79,12 @@ export class Http {
       this.failure(ex, res);
     }
   }
-  failure(ex: any, res: http.ServerResponse) {
+  private failure(ex: any, res: http.ServerResponse) {
     console.error("FAILURE!", ex);
     res.writeHead(500, { "content-type": "text/plain" });
     res.end();
   }
+
   public async invokePost(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
     console.assert(req.method === "POST");
     let cacheKey = {
