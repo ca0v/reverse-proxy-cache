@@ -1,75 +1,91 @@
 {
-  "name": "reverse-proxy-cache",
-  "version": "1.0.0",
-  "description": "gateway with caching to faciliate testing",
-  "main": "./bin/server.js",
-  "bin": {
-    "reverse-proxy-cache": "./bin/cli.js"
-  },
-  "scripts": {
-    "test": "mocha ./bin/test/test.js",
-    "server": "node ./bin/cli.js",
-    "watch:test": "npm run test -- -w",
-    "watch:build": "npm run build -- -w",
-    "dev": "npm-run-all -p watch:build watch:test",
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^8.0.0",
-    "got": "^9.6.0",
-    "npm-run-all": "^4.1.5",
-    "sqlite3": "^4.0.8"
-  },
-  "devDependencies": {
-    "@types/got": "^9.4.4",
-    "@types/http-proxy": "^1.17.0",
-    "@types/mocha": "^5.2.7",
-    "@types/sqlite3": "^3.1.5",
-    "mocha": "^6.2.0",
-    "typescript": "^3.5.1"
-  },
-  "reverse-proxy-cache": {
-    "port": "3002",
-    "reverse-proxy-db": "unittest.sqlite",
-    "proxy-pass": [
-      {
-        "about": "requests to /jsapi/3.29/esri redirect to https://js.arcgis.com/3.29/esri",
-        "baseUri": "/mock/jsapi/3.29/esri",
-        "proxyUri": "https://js.arcgis.com/3.29/esri"
-      },
-      {
-        "about": "requests intercept dojo",
-        "baseUri": "/mock/jsapi/3.29/dojo",
-        "proxyUri": "https://js.arcgis.com/3.29/dojo"
-      },
-      {
-        "about": "requests intercept dojo",
-        "baseUri": "/mock/jsapi/3.29/dojox",
-        "proxyUri": "https://js.arcgis.com/3.29/dojox"
-      },
-      {
-        "about": "requests intercept xstyle",
-        "baseUri": "/mock/jsapi/3.29/xstyle",
-        "proxyUri": "https://js.arcgis.com/3.29/xstyle"
-      },
-      {
-        "about": "requests intercept dojo",
-        "baseUri": "/mock/jsapi/3.29/dijit",
-        "proxyUri": "https://js.arcgis.com/3.29/dijit"
-      },
-      {
-        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
-        "baseUri": "/mock/ags",
-        "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
-      },
-      {
-        "baseUri": "/mock/geoserver",
-        "proxyUri": "http://localhost:8080/geoserver"
-      }
-    ]
-  }
+    "name": "reverse-proxy-cache",
+    "version": "1.0.0",
+    "description": "gateway with caching to faciliate testing",
+    "main": "./bin/server.js",
+    "bin": {
+        "reverse-proxy-cache": "./bin/cli.js"
+    },
+    "scripts": {
+        "test": "mocha ./bin/test/test.js",
+        "server": "node ./bin/cli.js",
+        "watch:test": "npm run test -- -w",
+        "watch:build": "npm run build -- -w",
+        "dev": "npm-run-all -p watch:build watch:test",
+        "build": "tsc"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^8.0.0",
+        "got": "^9.6.0",
+        "npm-run-all": "^4.1.5",
+        "sqlite3": "^4.0.8"
+    },
+    "devDependencies": {
+        "@types/got": "^9.4.4",
+        "@types/http-proxy": "^1.17.0",
+        "@types/mocha": "^5.2.7",
+        "@types/sqlite3": "^3.1.5",
+        "mocha": "^6.2.0",
+        "typescript": "^3.5.1"
+    },
+    "reverse-proxy-cache": {
+        "port": "3002",
+        "reverse-proxy-db": "unittest.sqlite",
+        "proxy-pass": [
+            {
+                "about": "do not cache api/auth requests",
+                "baseUri": "/mock/ips/11.2/api/auth",
+                "proxyUri": "http://usgvncalix01.infor.com/IPS112/api/auth",
+                "no-cache": true
+            },
+            {
+                "about": "proxy ips to mock service responses for routing",
+                "baseUri": "/mock/ips/11.2/api",
+                "proxyUri": "http://usgvncalix01.infor.com/IPS112/api"
+            },
+            {
+                "about": "proxy ips to mock service responses for routing",
+                "baseUri": "/mock/ips/11.2/nextgen",
+                "proxyUri": "http://usgvncalix01.infor.com/IPS112"
+            },
+            {
+                "about": "requests to /jsapi/3.29/esri redirect to https://js.arcgis.com/3.29/esri",
+                "baseUri": "/mock/jsapi/3.29/esri",
+                "proxyUri": "https://js.arcgis.com/3.29/esri"
+            },
+            {
+                "about": "requests intercept dojo",
+                "baseUri": "/mock/jsapi/3.29/dojo",
+                "proxyUri": "https://js.arcgis.com/3.29/dojo"
+            },
+            {
+                "about": "requests intercept dojo",
+                "baseUri": "/mock/jsapi/3.29/dojox",
+                "proxyUri": "https://js.arcgis.com/3.29/dojox"
+            },
+            {
+                "about": "requests intercept xstyle",
+                "baseUri": "/mock/jsapi/3.29/xstyle",
+                "proxyUri": "https://js.arcgis.com/3.29/xstyle"
+            },
+            {
+                "about": "requests intercept dojo",
+                "baseUri": "/mock/jsapi/3.29/dijit",
+                "proxyUri": "https://js.arcgis.com/3.29/dijit"
+            },
+            {
+                "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+                "baseUri": "/mock/ags",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
+            },
+            {
+                "baseUri": "/mock/geoserver",
+                "proxyUri": "http://localhost:8080/geoserver"
+            }
+        ]
+    }
 }

@@ -35,3 +35,8 @@ interface IConfig {
 
 - v1.0.0 - supports GET only
 - v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
+
+## Issues
+
+- `application/font-sfnt` content-type needs to be transmitted in binary format (not converted to json)
+- `application/font-woff` same

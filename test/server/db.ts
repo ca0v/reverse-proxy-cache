@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import { Db } from "../../server/db";
-import { IConfig } from "@app/server/IConfig";
+import { IConfig } from "../../server/IConfig";
 
 describe("server/db", () => {
     it("test 'exists' method", () => {

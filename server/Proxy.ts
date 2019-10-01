@@ -7,7 +7,9 @@ import { IConfig } from "./IConfig";
 export type ProxyInfo = {
     url: string;
     key?: string;
-    processors?: Processor[]
+    processors?: Processor[];
+    "write-to-cache"?: boolean;
+    "read-from-cache"?: boolean;
 }
 
 export class Proxy {
@@ -29,12 +31,16 @@ export class Proxy {
             return {
                 url: actualUrl,
                 key: cacheKey,
-                processors: processors
+                processors: processors,
+                "write-to-cache": true,
+                "read-from-cache": true
             };
         }
         return {
             url: actualUrl,
             key: cacheKey,
+            "write-to-cache": (true !== match["no-cache"]),
+            "read-from-cache": (true !== match["no-cache"])
         };
     }
 }

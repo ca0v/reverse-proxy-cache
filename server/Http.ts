@@ -1,132 +1,157 @@
 import * as got from "got";
 import http, { OutgoingHttpHeaders } from "http";
 import { Db } from "./db";
-import { stringify, unstringify } from "./stringify";
+import { stringify, unstringify, verbose } from "./stringify";
 import { Proxy, ProxyInfo } from "./proxy";
 
+function lowercase<T>(o: T): T {
+    let result = <any>{};
+    Object.keys(o).forEach(k => result[k.toLowerCase()] = result[k]);
+    return result;
+}
+
 export class Http {
-  constructor(private cache: Db, private proxy: Proxy) {
-  }
-
-  public async invokeDelete(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
-    console.assert(req.method === "DELETE");
-    return this.invoke(url, req, res);
-  }
-
-  public async invokeOptions(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
-    console.assert(req.method === "OPTIONS");
-    return this.invoke(url, req, res);
-  }
-
-  public async invokeGet(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
-    console.assert(req.method === "GET");
-    return this.invoke(url, req, res);
-  }
-
-  public async invokePut(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
-    console.assert(req.method === "PUT");
-    return this.invoke(url, req, res);
-  }
-
-  private async invoke(proxyInfo: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
-    let cacheKey = stringify({
-      method: req.method,
-      url: proxyInfo.key || proxyInfo.url || req.url || ""
-    });
-    let cachedata = await this.cache.exists(cacheKey);
-    if (!!cachedata) {
-      let result = unstringify(cachedata) as {
-        statusCode: number;
-        statusMessage: string;
-        headers: OutgoingHttpHeaders;
-        body: string;
-      };
-      if (!!proxyInfo.processors) {
-        proxyInfo.processors.forEach(processor => result.body = processor.processResponse(proxyInfo.url, result.body));
-      }
-      result.headers['Access-Control-Allow-Credentials'] = "true";
-      result.headers['Access-Control-Allow-Origin'] = "*";
-      result.headers['Access-Control-Allow-Methods'] = req.method;
-      console.log("headers", req.headers, result.headers);
-      res.writeHead(result.statusCode, result.statusMessage, result.headers);
-      res.write(result.body);
-      res.end();
-      return;
+    constructor(private cache: Db, private proxy: Proxy) {
     }
-    try {
-      let result = await got(proxyInfo.url, {
-        method: req.method,
-        rejectUnauthorized: false
-      });
-      let headers = {
-        "content-type": result.headers["content-type"],
-        'Access-Control-Allow-Credentials': "true",
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'application/json'
-      };
-      res.writeHead(result.statusCode || 200, headers);
-      res.write(result.body);
-      res.end();
-      this.cache.add(cacheKey, stringify({
-        statusCode: result.statusCode,
-        statusMessage: result.statusMessage,
-        headers: headers,
-        body: result.body
-      }));
-    }
-    catch (ex) {
-      this.failure(ex, res);
-    }
-  }
-  private failure(ex: any, res: http.ServerResponse) {
-    console.error("FAILURE!", ex);
-    res.writeHead(500, { "content-type": "text/plain" });
-    res.end();
-  }
 
-  public async invokePost(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
-    console.assert(req.method === "POST");
-    let cacheKey = {
-      url: req.url,
-      method: req.method,
-      request: ""
-    };
-    // collect the request body
-    req.on("data", chunk => cacheKey.request += chunk);
-    // check the cache, invoke if missing
-    req.on("end", async () => {
-      let cachedata = await this.cache.exists(stringify(cacheKey));
-      // found in cache, response with cached data
-      if (!!cachedata) {
-        let value = unstringify(cachedata) as {
-          statusCode: number;
-          statusMessage: string;
-          headers: OutgoingHttpHeaders;
-          body: string;
-        };
-        res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
-        res.write(value.body);
+    public async invokeDelete(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        console.assert(req.method === "DELETE");
+        return this.invoke(url, req, res);
+    }
+
+    public async invokeOptions(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        console.assert(req.method === "OPTIONS");
+        return this.invoke(url, req, res);
+    }
+
+    public async invokeGet(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        console.assert(req.method === "GET");
+        return this.invoke(url, req, res);
+    }
+
+    public async invokePut(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        console.assert(req.method === "PUT");
+        return this.invoke(url, req, res);
+    }
+
+    private async invoke(proxyInfo: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        let cacheKey = stringify({
+            method: req.method,
+            url: proxyInfo.key || proxyInfo.url || req.url || ""
+        });
+
+        let requestHeaders = lowercase(req.headers);
+        let origin = <string>requestHeaders.origin;
+
+        if (proxyInfo["read-from-cache"]) {
+            let cachedata = await this.cache.exists(cacheKey);
+            if (!!cachedata) {
+                let result = unstringify(cachedata) as {
+                    statusCode: number;
+                    statusMessage: string;
+                    headers: OutgoingHttpHeaders;
+                    body: string;
+                };
+
+                let resultHeaders = <OutgoingHttpHeaders>lowercase(result.headers);
+
+                if (!!proxyInfo.processors) {
+                    proxyInfo.processors.forEach(processor => result.body = processor.processResponse(proxyInfo.url, result.body));
+                }
+                resultHeaders['access-control-allow-credentials'] = "true";
+                resultHeaders['access-control-allow-origin'] = origin || "*";
+                resultHeaders['access-control-allow-methods'] = req.method;
+                verbose(`request headers: ${JSON.stringify(requestHeaders)}`);
+                verbose(`response headers: ${JSON.stringify(resultHeaders)}`);
+                res.writeHead(result.statusCode, result.statusMessage, result.headers);
+                res.write(result.body);
+                res.end();
+                return;
+            }
+        }
+        try {
+            requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
+            let result = await got(proxyInfo.url, {
+                method: req.method,
+                rejectUnauthorized: false,
+                headers: requestHeaders,
+            });
+
+            let resultHeaders = lowercase(result.headers);
+
+            verbose(`request headers: ${JSON.stringify(requestHeaders)}`);
+            verbose(`response headers: ${JSON.stringify(resultHeaders)}`);
+
+            resultHeaders["access-control-allow-credentials"] = "true";
+            resultHeaders["access-control-allow-origin"] = origin || "*";
+            resultHeaders["access-control-allow-methods"] = req.method;
+            resultHeaders["access-control-allow-headers"] = resultHeaders["content-type"];
+
+            res.writeHead(result.statusCode || 200, resultHeaders);
+            res.write(result.body);
+            res.end();
+
+            if (proxyInfo["write-to-cache"]) {
+                this.cache.add(cacheKey, stringify({
+                    statusCode: result.statusCode,
+                    statusMessage: result.statusMessage,
+                    headers: lowercase(resultHeaders),
+                    body: result.body
+                }));
+            }
+        }
+        catch (ex) {
+            console.error("req headers", requestHeaders);
+            this.failure(ex, res);
+        }
+    }
+    private failure(ex: any, res: http.ServerResponse) {
+        console.error("FAILURE!", ex);
+        res.writeHead(500, { "content-type": "text/plain" });
         res.end();
-        return;
-      }
-      // invoke actual service, cache the response
-      let value = await got.post(url.url, {
-        rejectUnauthorized: false,
-        body: cacheKey.request
-      });
-      let headers = {
-        "content-type": value.headers["content-type"]
-      };
-      res.writeHead(value.statusCode || 200, value.statusMessage, headers);
-      res.write(value.body);
-      res.end();
-      this.cache.add(stringify(cacheKey), stringify({
-        statusCode: value.statusCode,
-        statusMessage: value.statusMessage,
-        body: value.body,
-        headers: headers
-      }));
-    });
-  }
+    }
+
+    public async invokePost(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        console.assert(req.method === "POST");
+        let cacheKey = {
+            url: req.url,
+            method: req.method,
+            request: ""
+        };
+        // collect the request body
+        req.on("data", chunk => cacheKey.request += chunk);
+        // check the cache, invoke if missing
+        req.on("end", async () => {
+            let cachedata = await this.cache.exists(stringify(cacheKey));
+            // found in cache, response with cached data
+            if (!!cachedata) {
+                let value = unstringify(cachedata) as {
+                    statusCode: number;
+                    statusMessage: string;
+                    headers: OutgoingHttpHeaders;
+                    body: string;
+                };
+                res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
+                res.write(value.body);
+                res.end();
+                return;
+            }
+            // invoke actual service, cache the response
+            let value = await got.post(url.url, {
+                rejectUnauthorized: false,
+                body: cacheKey.request
+            });
+
+            let valueHeaders = lowercase(value.headers);
+            res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);
+            res.write(value.body);
+            res.end();
+            this.cache.add(stringify(cacheKey), stringify({
+                statusCode: value.statusCode,
+                statusMessage: value.statusMessage,
+                body: value.body,
+                headers: valueHeaders
+            }));
+        });
+    }
 }

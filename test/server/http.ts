@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import { Http } from "../../server/Http";
-import { Db } from "@app/server/db";
-import { Proxy } from "@app/server/proxy";
+import { Db } from "../../server/db";
+import { Proxy } from "../../server/proxy";
 
 describe("tests http", () => {
     it("api", () => {
