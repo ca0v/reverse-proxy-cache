@@ -3,12 +3,7 @@ import http, { OutgoingHttpHeaders } from "http";
 import { Db } from "./db";
 import { stringify, unstringify, verbose } from "./stringify";
 import { Proxy, ProxyInfo } from "./proxy";
-
-function lowercase<T>(o: T): T {
-    let result = <any>{};
-    Object.keys(o).forEach(k => result[k.toLowerCase()] = result[k]);
-    return result;
-}
+import { lowercase } from "./lowercase";
 
 export class Http {
     constructor(private cache: Db, private proxy: Proxy) {
@@ -61,9 +56,14 @@ export class Http {
                 resultHeaders['access-control-allow-credentials'] = "true";
                 resultHeaders['access-control-allow-origin'] = origin || "*";
                 resultHeaders['access-control-allow-methods'] = req.method;
-                verbose(`request headers: ${JSON.stringify(requestHeaders)}`);
-                verbose(`response headers: ${JSON.stringify(resultHeaders)}`);
-                res.writeHead(result.statusCode, result.statusMessage, result.headers);
+
+                // it is not encoded as it may have been originally
+                delete resultHeaders["content-encoding"];
+                delete resultHeaders["content-length"];
+
+                verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
+                verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
+                res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
                 res.write(result.body);
                 res.end();
                 return;

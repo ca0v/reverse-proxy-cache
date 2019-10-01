@@ -1,3 +1,4 @@
+import "./server/lowercase";
 import "./thirdparty";
 import "./server";
 import "./server/http";
