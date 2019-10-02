@@ -11,6 +11,11 @@ export class Db {
         this.db = new sqlite3.Database(dbFile);
     }
 
+    close() {
+        // not sure how to close the connection, continually errros with `SQLITE_BUSY: unable to close due to unfinalized statements or unfinished backups`
+        //this.exists("foo").then(() => this.db.close());
+    }
+
     static async init(config: IConfig) {
         let result = new Db(config);
         return new Promise<Db>((resolve, reject) => {
@@ -33,6 +38,7 @@ export class Db {
         });
         return p;
     }
+
     add(url: string, res: string) {
         verbose("add");
         let cmd = this.db.prepare("INSERT INTO cache VALUES (?, ?)");

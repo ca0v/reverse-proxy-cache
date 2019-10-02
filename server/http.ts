@@ -92,7 +92,7 @@ export class Http {
             res.end();
 
             if (proxyInfo["write-to-cache"]) {
-                this.cache.add(cacheKey, stringify({
+                await this.cache.add(cacheKey, stringify({
                     statusCode: result.statusCode,
                     statusMessage: result.statusMessage,
                     headers: lowercase(resultHeaders),
