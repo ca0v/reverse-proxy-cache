@@ -36,6 +36,7 @@ export class Proxy {
                 "read-from-cache": true
             };
         }
+
         return {
             url: actualUrl,
             key: cacheKey,

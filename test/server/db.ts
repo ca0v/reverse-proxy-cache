@@ -3,6 +3,7 @@ import { Db } from "../../server/db";
 import { IConfig } from "../../server/IConfig";
 
 describe("server/db", () => {
+
     it("test 'exists' method", async () => {
         let cfg: IConfig = {
             "reverse-proxy-cache": {
@@ -16,4 +17,5 @@ describe("server/db", () => {
         db.close();
         assert.ok(!isNull, "key1 not found");
     });
+
 });

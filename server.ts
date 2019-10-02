@@ -6,7 +6,7 @@ import { verbose } from "./server/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
 
-class Server {
+export class Server {
 
     private server: http.Server | null = null;
     private cache: Db | null = null;
@@ -20,7 +20,7 @@ class Server {
 
     start() {
         let config = this.config;
- 
+
         return Db.init(config)
             .then(cache => {
                 this.cache = cache;
@@ -63,8 +63,8 @@ class Server {
                                 break;
                         }
                     } catch (ex) {
-                        console.error(ex);
-                        res.writeHead(500, `${(ex + "").substring(0, 16)}`, { "content-type": "text/plain" });
+                        console.error(`${req.method} request failed for ${proxyurl}:\n ${ex}`);
+                        res.writeHead(500, `${(ex + "").substring(0, 16)}`, { "content-type": "text/plain", "body": ex });
                         res.end();
                     }
 
@@ -83,8 +83,6 @@ class Server {
     }
 }
 
-async function run(config: IConfig) {
+export async function run(config: IConfig) {
     return new Server(config).start();
 }
-
-export = run;

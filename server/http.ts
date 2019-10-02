@@ -30,12 +30,15 @@ export class Http {
     }
 
     private async invoke(proxyInfo: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
+        verbose("invoke proxy info: ", proxyInfo);
         let cacheKey = stringify({
             method: req.method,
             url: proxyInfo.key || proxyInfo.url || req.url || ""
         });
 
         let requestHeaders = lowercase(req.headers);
+        verbose(`inbound request headers: ${JSON.stringify(requestHeaders)}`);
+
         let origin = <string>requestHeaders.origin;
 
         if (proxyInfo["read-from-cache"]) {
@@ -70,7 +73,12 @@ export class Http {
             }
         }
         try {
+            delete requestHeaders["user-agent"];
+            delete requestHeaders.host;
+            delete requestHeaders.connection;
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
+            verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
+
             let result = await got(proxyInfo.url, {
                 method: req.method,
                 rejectUnauthorized: false,
@@ -78,16 +86,17 @@ export class Http {
             });
 
             let resultHeaders = lowercase(result.headers);
+            verbose(`inbound response headers: ${JSON.stringify(resultHeaders)}`);
 
-            verbose(`request headers: ${JSON.stringify(requestHeaders)}`);
-            verbose(`response headers: ${JSON.stringify(resultHeaders)}`);
+            let outboundHeader = {
+                "access-control-allow-credentials": "true",
+                "access-control-allow-origin": origin || "*",
+                "access-control-allow-methods": req.method,
+                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "",
+            }
 
-            resultHeaders["access-control-allow-credentials"] = "true";
-            resultHeaders["access-control-allow-origin"] = origin || "*";
-            resultHeaders["access-control-allow-methods"] = req.method;
-            resultHeaders["access-control-allow-headers"] = resultHeaders["content-type"];
-
-            res.writeHead(result.statusCode || 200, resultHeaders);
+            verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
+            res.writeHead(result.statusCode || 200, outboundHeader);
             res.write(result.body);
             res.end();
 
@@ -101,13 +110,15 @@ export class Http {
             }
         }
         catch (ex) {
-            console.error("req headers", requestHeaders);
+            console.error("failure to invoke", ex);
             this.failure(ex, res);
         }
     }
     private failure(ex: any, res: http.ServerResponse) {
-        console.error("FAILURE!", ex);
-        res.writeHead(500, { "content-type": "text/plain" });
+        res.writeHead(500, {
+            "content-type": "text/plain",
+            "body": ex
+        });
         res.end();
     }
 
@@ -118,40 +129,57 @@ export class Http {
             method: req.method,
             request: ""
         };
-        // collect the request body
-        req.on("data", chunk => cacheKey.request += chunk);
-        // check the cache, invoke if missing
-        req.on("end", async () => {
-            let cachedata = await this.cache.exists(stringify(cacheKey));
-            // found in cache, response with cached data
-            if (!!cachedata) {
-                let value = unstringify(cachedata) as {
-                    statusCode: number;
-                    statusMessage: string;
-                    headers: OutgoingHttpHeaders;
-                    body: string;
-                };
-                res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
-                res.write(value.body);
-                res.end();
-                return;
-            }
-            // invoke actual service, cache the response
-            let value = await got.post(url.url, {
-                rejectUnauthorized: false,
-                body: cacheKey.request
-            });
+        return new Promise((good, bad) => {
+            // collect the request body
+            req
+                .on("error", bad)
+                .on("data", chunk => cacheKey.request += chunk)
+                // check the cache, invoke if missing
+                .on("end", async () => {
+                    try {
+                        if (url["read-from-cache"]) {
+                            let cachedata = await this.cache.exists(stringify(cacheKey));
+                            // found in cache, response with cached data
+                            if (!!cachedata) {
+                                let value = unstringify(cachedata) as {
+                                    statusCode: number;
+                                    statusMessage: string;
+                                    headers: OutgoingHttpHeaders;
+                                    body: string;
+                                };
+                                res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
+                                res.write(value.body);
+                                res.end();
+                                good(value.body);
+                                return;
+                            }
+                        }
+                        // invoke actual service, cache the response
+                        let value = await got.post(url.url, {
+                            rejectUnauthorized: false,
+                            body: cacheKey.request
+                        });
 
-            let valueHeaders = lowercase(value.headers);
-            res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);
-            res.write(value.body);
-            res.end();
-            this.cache.add(stringify(cacheKey), stringify({
-                statusCode: value.statusCode,
-                statusMessage: value.statusMessage,
-                body: value.body,
-                headers: valueHeaders
-            }));
+                        let valueHeaders = lowercase(value.headers);
+                        res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);
+                        res.write(value.body);
+                        res.end();
+
+                        if (url["write-to-cache"]) {
+                            this.cache.add(stringify(cacheKey), stringify({
+                                statusCode: value.statusCode,
+                                statusMessage: value.statusMessage,
+                                body: value.body,
+                                headers: valueHeaders
+                            }));
+                        }
+
+                        good(value.body);
+                        return;
+                    } catch (ex) {
+                        bad(ex);
+                    }
+                });
         });
     }
 }
