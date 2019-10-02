@@ -40,8 +40,8 @@ export class Proxy {
         return {
             url: actualUrl,
             key: cacheKey,
-            "write-to-cache": (true !== match["no-cache"]),
-            "read-from-cache": (true !== match["no-cache"])
+            "write-to-cache": (!match["no-cache"] || "writeonly" === match["no-cache"]),
+            "read-from-cache": (!match["no-cache"] || "readonly" === match["no-cache"])
         };
     }
 }

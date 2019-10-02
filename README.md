@@ -1,17 +1,18 @@
 # reverse-proxy-cache
+
 Reverse Proxy with Caching to facilitate service oriented unit tests
 
 ## Develop
 
-* `npm run server` TODO: restart when source code changes
- 
+-   `npm run server` TODO: restart when source code changes
+
 ## Install
 
-- `npm install https://github.com/ca0v/reverse-proxy-cache/tarball/v1.0.1`
+-   `npm install https://github.com/ca0v/reverse-proxy-cache/tarball/v1.0.1`
 
 ## Cli
 
-- `npx reverse-proxy-cache`
+-   `npx reverse-proxy-cache`
 
 ## Configure
 
@@ -33,10 +34,12 @@ interface IConfig {
 
 ## History
 
-- v1.0.0 - supports GET only
-- v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
+-   v1.0.0 - supports GET only
+-   v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
 
 ## Issues
 
-- `application/font-sfnt` content-type needs to be transmitted in binary format (not converted to json)
-- `application/font-woff` same
+-   content-type needs to be transmitted in binary format (not converted to json)
+    -   `application/font-sfnt`
+    -   `application/font-woff`
+    -   `image/png`, `image/gif`

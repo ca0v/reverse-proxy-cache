@@ -8,7 +8,7 @@ export interface IConfig {
             baseUri: string;
             proxyUri: string;
             "cache-processor"?: string;
-            "no-cache"?: boolean;
+            "no-cache"?: true | "readonly" | "writeonly";
         }>;
     };
 }

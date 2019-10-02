@@ -76,6 +76,7 @@ export class Http {
             delete requestHeaders["user-agent"];
             delete requestHeaders.host;
             delete requestHeaders.connection;
+            requestHeaders["accept-encoding"] = ""; // prevents gzip errors
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
             verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
 
@@ -92,7 +93,7 @@ export class Http {
                 "access-control-allow-credentials": "true",
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
-                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "",
+                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*",
             }
 
             verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);

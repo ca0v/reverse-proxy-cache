@@ -6,7 +6,7 @@ import { EchoServer } from "./EchoServer";
 import { IConfig } from "../server/IConfig";
 import { verbose } from "../server/stringify";
 
-let echoPort = 3001;// + Math.round(200 * Math.random());
+let echoPort = 3003;// + Math.round(200 * Math.random());
 let proxyPort = echoPort + 1;
 
 let config: IConfig = {
@@ -25,12 +25,17 @@ let config: IConfig = {
                 "about": "proxy back to echo server, use caching",
                 "proxyUri": `http://localhost:${echoPort}/echo`,
                 "baseUri": "/mock/cache/echo",
-                "no-cache": false,
             },
             {
                 "about": "caches calendar.html",
                 "proxyUri": "http://js.arcgis.com/3.29/dijit/templates/",
                 "baseUri": "/mock/ags/3.29/dijit/templates/",
+                "no-cache": true,
+            },
+            {
+                "about": "proxy xstyle",
+                "proxyUri": "https://js.arcgis.com/3.29/xstyle/",
+                "baseUri": "/mock/ags/3.29/xstyle/",
                 "no-cache": true,
             }
         ]
@@ -60,6 +65,20 @@ describe("tests proxy server", () => {
         echo.stop();
     });
 
+    it("tests https GET against proxy", async () => {
+        let testUrl = `http://localhost:${proxyPort}/mock/ags/3.29/xstyle/css.js`;
+        let body = (await got.get(testUrl)).body;
+        console.log("xstyle.js", body);
+        assert.ok(body, "html returned");
+    });
+
+    it("tests http GET against proxy", async () => {
+        let testUrl = `http://localhost:${proxyPort}/mock/ags/3.29/dijit/templates/Calendar.html`;
+        let body = (await got.get(testUrl)).body;
+        console.log("calendar.html", body);
+        assert.ok(body, "html returned");
+    });
+    
     it("tests 'offline' mode", async () => {
         echo.stop();
         try {
@@ -77,17 +96,6 @@ describe("tests proxy server", () => {
             echo.start();
         }
     }).timeout(5000);
-
-    it("tests https GET against proxy", async () => {
-        let testUrl = `http://localhost:${proxyPort}/mock/ags/3.29/dijit/templates/Calendar.html`;
-        let html = (await got.get(testUrl)).body;
-        assert.ok(html, "html returned");
-        let originalHtml = html;
-        echo.stop();
-        html = (await got.get(testUrl)).body;
-        echo.start();
-        assert.equal(html, originalHtml, "uncached and cached responses are identical");
-    });
 
     it("tests POST against cache proxy", async () => {
         echo.start();

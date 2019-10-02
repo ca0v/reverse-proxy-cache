@@ -70,7 +70,8 @@
             {
                 "about": "requests intercept xstyle",
                 "baseUri": "/mock/jsapi/3.29/xstyle",
-                "proxyUri": "https://js.arcgis.com/3.29/xstyle"
+                "proxyUri": "https://js.arcgis.com/3.29/xstyle",
+                "no-cache": "writeonly"
             },
             {
                 "about": "requests intercept dojo",
