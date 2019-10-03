@@ -1,22 +1,41 @@
 import * as assert from "assert";
-import { Proxy } from "../../server/Proxy";
-describe("tests Proxy", () => {
-    it("tests 'proxy' method", () => {
-        let proxy = new Proxy({
+import { Proxy } from "../../server/proxy";
+
+describe("tests proxy", () => {
+
+    it("tests proxy", () => {
+
+        let cfg = {
             "reverse-proxy-cache": {
-                "port": "3002",
+                port: "3002",
                 "reverse-proxy-db": "unittest.sqlite",
                 "proxy-pass": [
                     {
-                        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
-                        "baseUri": "/mock/ags",
+                        about: "mock-foo-bar",
+                        baseUri: "/mock/foo/bar",
                         "cache-processor": "ignore-callback-querystring",
-                        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
+                        proxyUri: "//mock-foo-bar"
+                    },
+                    {
+                        about: "mock-foo",
+                        baseUri: "/mock/foo",
+                        "cache-processor": "ignore-callback-querystring",
+                        proxyUri: "//mock-foo"
+                    },
+                    {
+                        about: "mock-bar",
+                        baseUri: "/mock/bar",
+                        "cache-processor": "ignore-callback-querystring",
+                        proxyUri: "//mock-bar"
                     }
                 ]
             }
-        });
+        };
 
-        assert.equal(proxy.proxy("/mock/ags/foo").url, "https://usalvwdgis1.infor.com:6443/arcgis/foo");
-    })
-})
+        let proxy = new Proxy(cfg);
+
+        assert.equal(proxy.proxy("/mock/foo/it").url, "//mock-foo/it");
+        assert.equal(proxy.proxy("/mock/bar/it").url, "//mock-bar/it");
+        assert.equal(proxy.proxy("/mock/foo/bar/it").url, "//mock-foo-bar/it");
+    });
+});

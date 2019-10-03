@@ -1,7 +1,17 @@
+import * as node_http from "http";
 import * as assert from "assert";
 import { Http } from "../../server/Http";
-import { Db } from "../../server/db";
-import { Proxy } from "../../server/proxy";
+import { IDb } from "@app/server/db";
+import { EchoServer } from "../EchoServer";
+import * as querystring from "querystring";
+
+function rightOf(v: string, pattern: string) {
+    let i = v.indexOf(pattern);
+    return i === -1 ? "" : v.substring(i + 1);
+}
+function promise<T>(value: T) {
+    return new Promise<T>(good => good(value));
+}
 
 describe("tests http", () => {
     it("api", () => {
@@ -10,26 +20,52 @@ describe("tests http", () => {
         assert.ok(Http.prototype.invokeOptions);
         assert.ok(Http.prototype.invokePost);
         assert.ok(Http.prototype.invokePut);
+    });
 
-        let cfg = {
-            "reverse-proxy-cache": {
-                "port": "3002",
-                "reverse-proxy-db": "unittest.sqlite",
-                "proxy-pass": [
-                    {
-                        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
-                        "baseUri": "/mock/ags",
-                        "cache-processor": "ignore-callback-querystring",
-                        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
-                    }
-                ]
-            }
+    it("tests invoke", done => {
+        let db: IDb = {
+            exists: (url: string) => promise(url),
+            add: (url: string, res: string) => {}
         };
 
-        Db.init(cfg).then(cache => {
-            let proxy = new Proxy(cfg);
-            let http = new Http(cache, proxy);
-            // cannot test without setting up a server?  Might as well setup client-side tests for the server module?
+        let echo = new EchoServer({ port: 3003 });
+        echo.start();
+
+        let http = new Http(db);
+
+        let server = node_http.createServer((req, res) => {
+            let url = rightOf(req.url + "", "?");
+            let query = querystring.parse(url || "");
+
+            http.invokeGet(
+                {
+                    url: `http://localhost:3003/echo?${querystring.stringify(query)}`
+                },
+                req,
+                res
+            );
         });
+
+        server.listen(3004);
+
+        node_http
+            .get("http://localhost:3004/echo?foo=bar&bar=foo", res => {
+                let data = ""; // what if it is binary data?
+                res.on("data", chunk => {
+                    data += chunk;
+                }).on("end", () => {
+                    try {
+                        assert.ok(data);
+                        assert.equal(data, "echo()", "empty echo response");
+                        done();
+                    } catch (ex) {
+                        done(ex);
+                    } finally {
+                        server.close();
+                        echo.stop();
+                    }
+                });
+            })
+            .on("error", err => done(err));
     });
 });

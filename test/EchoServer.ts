@@ -13,9 +13,11 @@ export class EchoServer {
         if (!this.server) {
             this.server = http.createServer(async (req, res) => {
                 let ended = false;
+                res.write("echo(");
                 req
                     .on("end", () => {
                         ended = true;
+                        res.write(")");
                         res.end();
                     })
                     .on("data", data => {

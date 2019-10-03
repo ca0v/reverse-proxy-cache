@@ -2,7 +2,12 @@ import * as sqlite3 from "sqlite3";
 import { verbose } from "./stringify";
 import { IConfig } from "./IConfig";
 
-export class Db {
+export interface IDb {
+    exists(url: string): Promise<string|null>;
+    add(url: string, res: string): void;
+}
+
+export class Db implements IDb {
     private db: sqlite3.Database;
 
     private constructor(config: IConfig) {
@@ -19,12 +24,20 @@ export class Db {
     static async init(config: IConfig) {
         let result = new Db(config);
         return new Promise<Db>((resolve, reject) => {
-            return result.db.run("CREATE TABLE cache (url TEXT, res TEXT)", () => {
-                resolve(result);
-            }, err => {
-                if ("" + err !== "Error: SQLITE_ERROR: table cache already exists") reject(err);
-                resolve(result);
-            });
+            return result.db.run(
+                "CREATE TABLE cache (url TEXT, res TEXT)",
+                () => {
+                    resolve(result);
+                },
+                err => {
+                    if (
+                        "" + err !==
+                        "Error: SQLITE_ERROR: table cache already exists"
+                    )
+                        reject(err);
+                    resolve(result);
+                }
+            );
         });
     }
 

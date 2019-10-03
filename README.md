@@ -40,6 +40,11 @@ interface IConfig {
 ## Issues
 
 -   content-type needs to be transmitted in binary format (not converted to json)
+
     -   `application/font-sfnt`
     -   `application/font-woff`
     -   `image/png`, `image/gif`
+
+-   having difficulty with spotting unhandled exceptions, maybe find a linter tool to discover them
+
+    -   https://www.npmjs.com/package/eslint-plugin-promise

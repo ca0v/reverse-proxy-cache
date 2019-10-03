@@ -26,7 +26,7 @@ export class Server {
                 this.cache = cache;
                 if (!cache) throw "db failed to return a database connection";
                 let proxy = new Proxy(config);
-                let helper = new Http(cache, proxy);
+                let helper = new Http(cache);
                 this.server = http.createServer(async (req, res) => {
 
                     let url = req.url || "";

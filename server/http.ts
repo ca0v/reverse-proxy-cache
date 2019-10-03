@@ -1,12 +1,12 @@
 import * as got from "got";
 import http, { OutgoingHttpHeaders } from "http";
-import { Db } from "./db";
+import { IDb } from "./db";
 import { stringify, unstringify, verbose } from "./stringify";
-import { Proxy, ProxyInfo } from "./proxy";
+import { ProxyInfo } from "./proxy";
 import { lowercase } from "./lowercase";
 
 export class Http {
-    constructor(private cache: Db, private proxy: Proxy) {
+    constructor(private cache: IDb) {
     }
 
     public async invokeDelete(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
