@@ -1,5 +1,5 @@
 import * as http from "http";
-import { verbose } from "../server/stringify";
+import { verbose } from "../server/fun/stringify";
 
 export class EchoServer {
     private server: http.Server | null = null;

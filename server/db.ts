@@ -1,5 +1,5 @@
 import * as sqlite3 from "sqlite3";
-import { verbose } from "./stringify";
+import { verbose } from "./fun/stringify";
 import { IConfig } from "./IConfig";
 
 export interface IDb {

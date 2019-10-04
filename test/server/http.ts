@@ -2,14 +2,14 @@ import * as node_http from "http";
 import * as assert from "assert";
 import { Http } from "../../server/Http";
 import { IDb } from "@app/server/db";
-import { EchoServer } from "../EchoServer";
+import { EchoServer } from "../echo-server";
 import * as querystring from "querystring";
 
 function rightOf(v: string, pattern: string) {
     let i = v.indexOf(pattern);
     return i === -1 ? "" : v.substring(i + 1);
 }
-function promise<T>(value: T) {
+function promisify<T>(value: T) {
     return new Promise<T>(good => good(value));
 }
 
@@ -24,7 +24,7 @@ describe("tests http", () => {
 
     it("tests invoke", done => {
         let db: IDb = {
-            exists: (url: string) => promise(url),
+            exists: (url: string) => promisify(url),
             add: (url: string, res: string) => {}
         };
 

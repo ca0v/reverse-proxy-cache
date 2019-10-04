@@ -2,7 +2,7 @@ require("dotenv").config();
 import * as http from "http";
 import { Db } from "./server/db";
 import { IConfig } from "./server/IConfig";
-import { verbose } from "./server/stringify";
+import { verbose } from "./server/fun/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
 
@@ -38,7 +38,7 @@ export class Server {
                         return;
                     }
 
-                    verbose(proxyurl.url);
+                    verbose(`proxyurl: ${req.method} ${proxyurl.url}`);
 
                     try {
                         switch (req.method) {
@@ -63,9 +63,10 @@ export class Server {
                                 break;
                         }
                     } catch (ex) {
-                        console.error(`${req.method} request failed for ${proxyurl}:\n ${ex}`);
+                        verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
                         res.writeHead(500, `${(ex + "").substring(0, 16)}`, { "content-type": "text/plain", "body": ex });
                         res.end();
+                        return;
                     }
 
                 });

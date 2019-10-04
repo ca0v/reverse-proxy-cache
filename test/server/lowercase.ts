@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { lowercase } from "../../server/lowercase";
+import { lowercase } from "../../server/fun/lowercase";
 
 describe("server/lowercase", () => {
     it("test 'lowercase' method", () => {

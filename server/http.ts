@@ -1,9 +1,11 @@
-import * as got from "got";
 import http, { OutgoingHttpHeaders } from "http";
 import { IDb } from "./db";
-import { stringify, unstringify, verbose } from "./stringify";
+import { stringify, unstringify, verbose } from "./fun/stringify";
 import { ProxyInfo } from "./proxy";
-import { lowercase } from "./lowercase";
+import { lowercase } from "./fun/lowercase";
+import { HttpGet } from "./fun/http-get";
+
+let got = new HttpGet();
 
 export class Http {
     constructor(private cache: IDb) {
@@ -80,9 +82,8 @@ export class Http {
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
             verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
 
-            let result = await got(proxyInfo.url, {
+            let result = await got.get(proxyInfo.url, {
                 method: req.method,
-                rejectUnauthorized: false,
                 headers: requestHeaders,
             });
 
@@ -102,7 +103,7 @@ export class Http {
             res.end();
 
             if (proxyInfo["write-to-cache"]) {
-                await this.cache.add(cacheKey, stringify({
+                this.cache.add(cacheKey, stringify({
                     statusCode: result.statusCode,
                     statusMessage: result.statusMessage,
                     headers: lowercase(resultHeaders),
@@ -133,10 +134,17 @@ export class Http {
         return new Promise((good, bad) => {
             // collect the request body
             req
-                .on("error", bad)
-                .on("data", chunk => cacheKey.request += chunk)
+                .on("error", (err) => {
+                    verbose("invokePost.error");
+                    bad(err);
+                })
+                .on("data", chunk => {
+                    verbose("invokePost.data");
+                    cacheKey.request += chunk;
+                })
                 // check the cache, invoke if missing
                 .on("end", async () => {
+                    verbose("invokePost.end");
                     try {
                         if (url["read-from-cache"]) {
                             let cachedata = await this.cache.exists(stringify(cacheKey));
@@ -157,7 +165,6 @@ export class Http {
                         }
                         // invoke actual service, cache the response
                         let value = await got.post(url.url, {
-                            rejectUnauthorized: false,
                             body: cacheKey.request
                         });
 
@@ -178,6 +185,8 @@ export class Http {
                         good(value.body);
                         return;
                     } catch (ex) {
+                        verbose("failed to proxy POST request: ", ex);
+                        res.end();
                         bad(ex);
                     }
                 });
