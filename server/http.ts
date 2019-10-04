@@ -3,13 +3,12 @@ import { IDb } from "./db";
 import { stringify, unstringify, verbose } from "./fun/stringify";
 import { ProxyInfo } from "./proxy";
 import { lowercase } from "./fun/lowercase";
-import { HttpGet } from "./fun/http-get";
+import { HttpGet, got as getter } from "./fun/http-get";
 
 let got = new HttpGet();
 
 export class Http {
-    constructor(private cache: IDb) {
-    }
+    constructor(private cache: IDb) {}
 
     public async invokeDelete(url: ProxyInfo, req: http.IncomingMessage, res: http.ServerResponse) {
         console.assert(req.method === "DELETE");
@@ -56,11 +55,13 @@ export class Http {
                 let resultHeaders = <OutgoingHttpHeaders>lowercase(result.headers);
 
                 if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach(processor => result.body = processor.processResponse(proxyInfo.url, result.body));
+                    proxyInfo.processors.forEach(
+                        processor => (result.body = processor.processResponse(proxyInfo.url, result.body))
+                    );
                 }
-                resultHeaders['access-control-allow-credentials'] = "true";
-                resultHeaders['access-control-allow-origin'] = origin || "*";
-                resultHeaders['access-control-allow-methods'] = req.method;
+                resultHeaders["access-control-allow-credentials"] = "true";
+                resultHeaders["access-control-allow-origin"] = origin || "*";
+                resultHeaders["access-control-allow-methods"] = req.method;
 
                 // it is not encoded as it may have been originally
                 delete resultHeaders["content-encoding"];
@@ -82,9 +83,10 @@ export class Http {
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
             verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
 
+            let got = getter(proxyInfo.url);
             let result = await got.get(proxyInfo.url, {
                 method: req.method,
-                headers: requestHeaders,
+                headers: requestHeaders
             });
 
             let resultHeaders = lowercase(result.headers);
@@ -94,8 +96,8 @@ export class Http {
                 "access-control-allow-credentials": "true",
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
-                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*",
-            }
+                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*"
+            };
 
             verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
             res.writeHead(result.statusCode || 200, outboundHeader);
@@ -103,15 +105,17 @@ export class Http {
             res.end();
 
             if (proxyInfo["write-to-cache"]) {
-                this.cache.add(cacheKey, stringify({
-                    statusCode: result.statusCode,
-                    statusMessage: result.statusMessage,
-                    headers: lowercase(resultHeaders),
-                    body: result.body
-                }));
+                this.cache.add(
+                    cacheKey,
+                    stringify({
+                        statusCode: result.statusCode,
+                        statusMessage: result.statusMessage,
+                        headers: lowercase(resultHeaders),
+                        body: result.body
+                    })
+                );
             }
-        }
-        catch (ex) {
+        } catch (ex) {
             console.error("failure to invoke", ex);
             this.failure(ex, res);
         }
@@ -119,7 +123,7 @@ export class Http {
     private failure(ex: any, res: http.ServerResponse) {
         res.writeHead(500, {
             "content-type": "text/plain",
-            "body": ex
+            body: ex
         });
         res.end();
     }
@@ -133,11 +137,10 @@ export class Http {
         };
         return new Promise((good, bad) => {
             // collect the request body
-            req
-                .on("error", (err) => {
-                    verbose("invokePost.error");
-                    bad(err);
-                })
+            req.on("error", err => {
+                verbose("invokePost.error");
+                bad(err);
+            })
                 .on("data", chunk => {
                     verbose("invokePost.data");
                     cacheKey.request += chunk;
@@ -174,12 +177,15 @@ export class Http {
                         res.end();
 
                         if (url["write-to-cache"]) {
-                            this.cache.add(stringify(cacheKey), stringify({
-                                statusCode: value.statusCode,
-                                statusMessage: value.statusMessage,
-                                body: value.body,
-                                headers: valueHeaders
-                            }));
+                            this.cache.add(
+                                stringify(cacheKey),
+                                stringify({
+                                    statusCode: value.statusCode,
+                                    statusMessage: value.statusMessage,
+                                    body: value.body,
+                                    headers: valueHeaders
+                                })
+                            );
                         }
 
                         good(value.body);

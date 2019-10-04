@@ -1,3 +1,4 @@
+import * as IHttp from "http";
 import * as http from "http";
 import * as https from "https";
 
@@ -5,20 +6,21 @@ import { verbose } from "./stringify";
 
 export class HttpsGet {
     get(url: string, options?: https.RequestOptions) {
-        let requestOptions = new URL(url) as https.RequestOptions;
+        verbose("https get");
+        let urlOptions = new URL(url);
+        let requestOptions = { ...(options || {}) }; // clone
         if (!requestOptions.method) requestOptions.method = "GET";
-        // copy options into requestOptions (native mixin?)
 
         let p = new Promise<{
             body: string;
             statusCode: number;
             statusMessage: string;
-            headers: http.IncomingHttpHeaders;
+            headers: IHttp.IncomingHttpHeaders;
         }>((good, bad) => {
-            let req = http
-                .request(requestOptions, res => {
+            let req = https
+                .request(urlOptions, requestOptions, res => {
                     let data: string = "";
-
+                    verbose("https response statusCode: ", res.statusCode);
                     let complete = () =>
                         good({
                             body: data,
@@ -261,11 +263,13 @@ export class HttpGet {
 export let got = (url: string) => {
     let options = new URL(url);
     switch (options.protocol) {
-        case "http":
+        case "http:":
+            verbose("using HttpGet");
             return new HttpGet();
-        case "https":
+        case "https:":
+            verbose("using HttpsGet");
             return new HttpsGet();
         default:
-            throw `invalid protocol: ${options.protocol}`;
+            throw `invalid protocol: "${options.protocol}"`;
     }
 };

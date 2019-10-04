@@ -66,7 +66,6 @@ describe("tests proxy server", () => {
     it("tests https GET against proxy", async () => {
         let testUrl = `http://localhost:${proxyPort}/mock/ags/3.29/xstyle/css.js`;
         let body = (await got.get(testUrl)).body;
-        console.log(body);
         assert.ok(body, "html returned");
     });
 
