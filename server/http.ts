@@ -85,6 +85,8 @@ export class Http {
             delete requestHeaders.connection;
             requestHeaders["accept-encoding"] = ""; // prevents gzip errors
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
+            requestHeaders["cache-control"] = "no-cache, no-store, must-revalidate"; // prevent 304 (maybe?)
+
             verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
 
             let got = getter(proxyInfo.url);

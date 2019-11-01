@@ -66,7 +66,7 @@
             {
                 "about": "proxy ips to mock service responses for routing",
                 "baseUri": "/mock/ips/11.2/nextgen",
-                "proxyUri": "http://usgvncalix01.infor.com/IPS112"
+                "proxyUri": "https://usgvncalix01.infor.com/IPS112"
             },
             {
                 "about": "requests to /jsapi/3.29/esri redirect to https://js.arcgis.com/3.29/esri",
@@ -86,8 +86,7 @@
             {
                 "about": "requests intercept xstyle",
                 "baseUri": "/mock/jsapi/3.29/xstyle",
-                "proxyUri": "https://js.arcgis.com/3.29/xstyle",
-                "no-cache": "writeonly"
+                "proxyUri": "https://js.arcgis.com/3.29/xstyle"
             },
             {
                 "about": "requests intercept dojo",

@@ -61,13 +61,13 @@ export class HttpsGet {
                             // error
                             verbose("res.error");
                             bad(err);
-                        })
-                        .on("readable", () => {
-                            // readable
-                            let chunk = res.read();
-                            verbose("res.readable", chunk.length);
-                            data.push(...chunk);
                         });
+                    // .on("readable", () => {
+                    //     // readable
+                    //     let chunk = res.read();
+                    //     verbose("res.readable", !!chunk && chunk.length);
+                    //     !!chunk && data.push(...chunk);
+                    // });
                 })
                 .on("error", err => {
                     verbose("req.error");
