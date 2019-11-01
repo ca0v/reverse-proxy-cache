@@ -4,45 +4,58 @@ import * as https from "https";
 
 import { verbose } from "./stringify";
 
+function isBinaryMimeType(mimeType: string) {
+    return ["image/"].some(v => mimeType.startsWith(v));
+}
+
+function toString(buffer: Array<number>) {
+    return buffer.map(v => String.fromCharCode(v)).join("");
+}
+
 export class HttpsGet {
     get(url: string, options?: https.RequestOptions) {
         verbose("https get");
         let urlOptions = new URL(url);
         let requestOptions = { ...(options || {}) }; // clone
         if (!requestOptions.method) requestOptions.method = "GET";
+        let protocol = url.startsWith("https://") ? https : http;
 
         let p = new Promise<{
-            body: string;
+            body: string | Array<number>;
             statusCode: number;
             statusMessage: string;
             headers: IHttp.IncomingHttpHeaders;
         }>((good, bad) => {
-            let req = https
+            let req = protocol
                 .request(urlOptions, requestOptions, res => {
-                    let data: string = "";
+                    let mimeType = res.headers["content-type"] || "text/plain";
+                    let isBinary = isBinaryMimeType(mimeType);
+                    verbose({ mimeType, isBinary });
+
+                    let data: Array<number> = [];
                     verbose("https response statusCode: ", res.statusCode);
+
                     let complete = () =>
                         good({
-                            body: data,
+                            body: isBinary ? data : toString(data),
                             headers: res.headers,
                             statusCode: res.statusCode || 0,
-                            statusMessage: res.statusMessage || ""
+                            statusMessage: res.statusMessage || "",
                         });
 
                     res.on("close", () => {
                         // close
-                        verbose("res.close", `"${data}"`);
+                        verbose("res.close", data.length);
                         complete();
                     })
                         .on("data", chunk => {
                             // data
-                            verbose("res.data", chunk);
-                            data += chunk || "";
+                            verbose("res.data", chunk.length);
+                            data.push(...chunk);
                         })
                         .on("end", () => {
                             // end
                             verbose("res.end");
-                            complete();
                         })
                         .on("error", err => {
                             // error
@@ -51,8 +64,9 @@ export class HttpsGet {
                         })
                         .on("readable", () => {
                             // readable
-                            verbose("res.readable");
-                            data += res.read() || "";
+                            let chunk = res.read();
+                            verbose("res.readable", chunk.length);
+                            data.push(...chunk);
                         });
                 })
                 .on("error", err => {
@@ -108,7 +122,7 @@ export class HttpGet {
                             body: data,
                             headers: res.headers,
                             statusCode: res.statusCode || 0,
-                            statusMessage: res.statusMessage || ""
+                            statusMessage: res.statusMessage || "",
                         });
 
                     res.on("close", () => {
@@ -191,7 +205,7 @@ export class HttpGet {
                             body: data,
                             headers: res.headers,
                             statusCode: res.statusCode || 0,
-                            statusMessage: res.statusMessage || ""
+                            statusMessage: res.statusMessage || "",
                         });
 
                     res.on("close", () => {

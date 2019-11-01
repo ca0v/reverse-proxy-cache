@@ -7,6 +7,10 @@ import { HttpGet, got as getter } from "./fun/http-get";
 
 let got = new HttpGet();
 
+function asBody(data: string | Array<number>) {
+    return typeof data === "string" ? data : Buffer.from(data);
+}
+
 export class Http {
     constructor(private cache: IDb) {}
 
@@ -34,7 +38,7 @@ export class Http {
         verbose("invoke proxy info: ", proxyInfo);
         let cacheKey = stringify({
             method: req.method,
-            url: proxyInfo.key || proxyInfo.url || req.url || ""
+            url: proxyInfo.key || proxyInfo.url || req.url || "",
         });
 
         let requestHeaders = lowercase(req.headers);
@@ -49,7 +53,7 @@ export class Http {
                     statusCode: number;
                     statusMessage: string;
                     headers: OutgoingHttpHeaders;
-                    body: string;
+                    body: string | Array<number>;
                 };
 
                 let resultHeaders = <OutgoingHttpHeaders>lowercase(result.headers);
@@ -70,7 +74,7 @@ export class Http {
                 verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
                 verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
                 res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
-                res.write(result.body);
+                res.write(asBody(result.body));
                 res.end();
                 return;
             }
@@ -85,8 +89,9 @@ export class Http {
 
             let got = getter(proxyInfo.url);
             let result = await got.get(proxyInfo.url, {
+                rejectUnauthorized: false,
                 method: req.method,
-                headers: requestHeaders
+                headers: requestHeaders,
             });
 
             let resultHeaders = lowercase(result.headers);
@@ -96,12 +101,12 @@ export class Http {
                 "access-control-allow-credentials": "true",
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
-                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*"
+                "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*",
             };
 
             verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
             res.writeHead(result.statusCode || 200, outboundHeader);
-            res.write(result.body);
+            res.write(asBody(result.body));
             res.end();
 
             if (proxyInfo["write-to-cache"]) {
@@ -111,7 +116,7 @@ export class Http {
                         statusCode: result.statusCode,
                         statusMessage: result.statusMessage,
                         headers: lowercase(resultHeaders),
-                        body: result.body
+                        body: result.body,
                     })
                 );
             }
@@ -123,7 +128,7 @@ export class Http {
     private failure(ex: any, res: http.ServerResponse) {
         res.writeHead(500, {
             "content-type": "text/plain",
-            body: ex
+            body: ex,
         });
         res.end();
     }
@@ -133,7 +138,7 @@ export class Http {
         let cacheKey = {
             url: req.url,
             method: req.method,
-            request: ""
+            request: "",
         };
         return new Promise((good, bad) => {
             // collect the request body
@@ -168,7 +173,7 @@ export class Http {
                         }
                         // invoke actual service, cache the response
                         let value = await got.post(url.url, {
-                            body: cacheKey.request
+                            body: cacheKey.request,
                         });
 
                         let valueHeaders = lowercase(value.headers);
@@ -183,7 +188,7 @@ export class Http {
                                     statusCode: value.statusCode,
                                     statusMessage: value.statusMessage,
                                     body: value.body,
-                                    headers: valueHeaders
+                                    headers: valueHeaders,
                                 })
                             );
                         }

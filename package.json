@@ -41,6 +41,18 @@
         "reverse-proxy-db": "unittest.sqlite",
         "proxy-pass": [
             {
+                "baseUri": "/mock/test/MapIcons/",
+                "proxyUri": "https://usgvncalix01.infor.com/IPS112/client/images/MapDrawer/MapIcons/"
+            },
+            {
+                "baseUri": "/mock/proxy/ags/public/soap/services/",
+                "proxyUri": "https://server.arcgisonline.com/ArcGIS/services/"
+            },
+            {
+                "baseUri": "/mock/proxy/ags/soap/services/",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/services/"
+            },
+            {
                 "about": "do not cache api/auth requests",
                 "baseUri": "/mock/ips/11.2/api/auth",
                 "proxyUri": "http://usgvncalix01.infor.com/IPS112/api/auth",
