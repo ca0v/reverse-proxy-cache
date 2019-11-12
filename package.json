@@ -49,8 +49,21 @@
                 "proxyUri": "https://server.arcgisonline.com/ArcGIS/services/"
             },
             {
+                "baseUri": "/mock/proxy/ags/public/rest/services/",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://server.arcgisonline.com/ArcGIS/rest/services/"
+            },
+            {
+                "baseUri": "/mock/agency/rest/services/sewer/mapserver",
+                "proxyUri": "https://matterhornvs.co.pierce.wa.us/spatialservices/rest/services/Sewer/IPSBilling/MapServer"
+            },
+            {
                 "baseUri": "/mock/proxy/ags/soap/services/",
-                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/services/"
+                "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/services/"
+            },
+            {
+                "baseUri": "/mock/proxy/ags/rest/services/",
+                "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/rest/services/"
             },
             {
                 "about": "do not cache api/auth requests",
