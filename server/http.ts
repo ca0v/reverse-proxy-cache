@@ -45,6 +45,8 @@ export class Http {
         verbose(`inbound request headers: ${JSON.stringify(requestHeaders)}`);
 
         let origin = <string>requestHeaders.origin;
+        let host = <string>requestHeaders.host;
+
 
         if (proxyInfo["read-from-cache"]) {
             let cachedata = await this.cache.exists(cacheKey);
@@ -64,7 +66,7 @@ export class Http {
                     );
                 }
                 resultHeaders["access-control-allow-credentials"] = "true";
-                resultHeaders["access-control-allow-origin"] = origin || "*";
+                resultHeaders["access-control-allow-origin"] = origin || host || "*";
                 resultHeaders["access-control-allow-methods"] = req.method;
 
                 // it is not encoded as it may have been originally

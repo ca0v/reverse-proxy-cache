@@ -1,21 +1,29 @@
 require("dotenv").config();
 import * as http from "http";
 import { Db } from "./server/db";
-import { IConfig } from "./server/IConfig";
-import { verbose } from "./server/fun/stringify";
+import { IConfig, ReverseProxyCache as ReverseProxyCacheConfig } from "./server/IConfig";
+import { verbose as dump } from "./server/fun/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
 
 export class Server {
-
     private server: http.Server | null = null;
     private cache: Db | null = null;
+    private config: ReverseProxyCacheConfig;
 
-    constructor(private config: IConfig) {
+    constructor(config: IConfig) {
         if (!config["reverse-proxy-cache"]) throw "missing configuration: reverse-proxy-cache not found";
         if (!config["reverse-proxy-cache"].port) throw "missing configuration: reverse-proxy-cache/port not found";
-        if (!config["reverse-proxy-cache"]["reverse-proxy-db"]) throw "missing configuration: reverse-proxy-cache/reverse-proxy-db not found";
-        if (!config["reverse-proxy-cache"]["proxy-pass"]) throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
+        if (!config["reverse-proxy-cache"]["reverse-proxy-db"])
+            throw "missing configuration: reverse-proxy-cache/reverse-proxy-db not found";
+        if (!config["reverse-proxy-cache"]["proxy-pass"])
+            throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
+        this.config = config["reverse-proxy-cache"];
+    }
+
+    private verbose(...args: string[]) {
+        if (!this.config.verbose) return;
+        dump(...args);
     }
 
     async start() {
@@ -23,8 +31,7 @@ export class Server {
 
         const cache = await Db.init(config);
         this.cache = cache;
-        if (!cache)
-            throw "db failed to return a database connection";
+        if (!cache) throw "db failed to return a database connection";
         let proxy = new Proxy(config);
         let helper = new Http(cache);
         this.server = http.createServer(async (req, res) => {
@@ -36,7 +43,7 @@ export class Server {
                 res.end();
                 return;
             }
-            verbose(`proxyurl: ${req.method} ${proxyurl.url}`);
+            this.verbose(`proxyurl: ${req.method} ${proxyurl.url}`);
             try {
                 switch (req.method) {
                     case "DELETE":
@@ -59,17 +66,16 @@ export class Server {
                         res.end();
                         break;
                 }
-            }
-            catch (ex) {
-                verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
-                res.writeHead(500, `${(ex + "").substring(0, 16)}`, { "content-type": "text/plain", "body": ex });
+            } catch (ex) {
+                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
+                res.writeHead(500, `${(ex + "").substring(0, 16)}`, { "content-type": "text/plain", body: ex });
                 res.end();
                 return;
             }
         });
-        let port = config["reverse-proxy-cache"].port;
+        let port = config.port;
         this.server.listen(port);
-        verbose(`listening on ${port}`);
+        this.verbose(`listening on ${port}`);
         return this;
     }
 

@@ -1,6 +1,6 @@
 import * as sqlite3 from "sqlite3";
 import { verbose } from "./fun/stringify";
-import { IConfig } from "./IConfig";
+import { IConfig, ReverseProxyCache } from "./IConfig";
 
 export interface IDb {
     exists(url: string): Promise<string|null>;
@@ -10,9 +10,9 @@ export interface IDb {
 export class Db implements IDb {
     private db: sqlite3.Database;
 
-    private constructor(config: IConfig) {
-        let dbFile = config["reverse-proxy-cache"]["reverse-proxy-db"];
-        verbose(`loading ${dbFile}`);
+    private constructor(config: ReverseProxyCache) {
+        let dbFile = config["reverse-proxy-db"];
+        config.verbose && verbose(`loading ${dbFile}`);
         this.db = new sqlite3.Database(dbFile);
     }
 
@@ -21,7 +21,7 @@ export class Db implements IDb {
         //this.exists("foo").then(() => this.db.close());
     }
 
-    static async init(config: IConfig) {
+    static async init(config: ReverseProxyCache) {
         let result = new Db(config);
         return new Promise<Db>((resolve, reject) => {
             return result.db.run(

@@ -39,6 +39,7 @@
     "reverse-proxy-cache": {
         "port": "3002",
         "reverse-proxy-db": "unittest.sqlite",
+        "verbose": false,
         "proxy-pass": [
             {
                 "baseUri": "/mock/test/MapIcons/",
@@ -102,6 +103,15 @@
             {
                 "baseUri": "/mock/geoserver",
                 "proxyUri": "http://localhost:8080/geoserver"
+            },
+            {
+                "baseUri": "/mock/agency/rest/services/sewer/MapServer",
+                "proxyUri": "https://matterhornvs.co.pierce.wa.us/spatialservices/rest/services/Sewer/IPSBilling/MapServer"
+            },
+            {
+                "cache-processor": "ignore-callback-querystring",
+                "baseUri": "/mock/proxy/ags/public/rest/services/",
+                "proxyUri": "https://server.arcgisonline.com/ArcGIS/rest/services/"
             }
         ]
     }

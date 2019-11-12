@@ -1,7 +1,7 @@
 import * as defaultProcessor from "../cache-processor/ignore-callback-querystring";
 type Processor = typeof defaultProcessor;
 
-import { IConfig } from "./IConfig";
+import { IConfig, ReverseProxyCache } from "./IConfig";
 
 
 export type ProxyInfo = {
@@ -13,11 +13,11 @@ export type ProxyInfo = {
 }
 
 export class Proxy {
-    constructor(private config: IConfig) {
+    constructor(private config: ReverseProxyCache) {
         // nothing to do
     }
     proxy(url: string): ProxyInfo {
-        let match = this.config["reverse-proxy-cache"]["proxy-pass"].find(v => url.startsWith(v.baseUri));
+        let match = this.config["proxy-pass"].find(v => url.startsWith(v.baseUri));
         if (!match)
             return { url };
         let actualUrl = url.replace(match.baseUri, match.proxyUri);
