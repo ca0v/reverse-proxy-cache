@@ -6,6 +6,10 @@ Reverse Proxy with Caching to facilitate service oriented unit tests
 
 -   `npm run server` TODO: restart when source code changes
 
+## Todo
+
+-   watch package.json for changes and restart service
+
 ## Install
 
 -   `npm install https://github.com/ca0v/reverse-proxy-cache/tarball/v1.0.1`
