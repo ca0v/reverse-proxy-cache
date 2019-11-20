@@ -69,9 +69,14 @@
                 "proxyUri": "http://tasks.arcgisonline.com/ArcGIS/rest/services/"
             },
             {
-                "baseUri": "/mock/proxy/ags/rest/services/",
+                "baseUri": "/mock/proxy/ags/rest/services/annotations/",
                 "cache-processor": "ignore-callback-querystring",
-                "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/rest/services/"
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
+            },
+            {
+                "baseUri": "/mock/proxy/ags/rest/",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/rest/"
             },
             {
                 "about": "do not cache api/auth requests",
