@@ -42,6 +42,11 @@
         "verbose": false,
         "proxy-pass": [
             {
+       	        "baseUri": "/mock/proxy/agol/ArcGIS/rest/services/World_Street_Map/MapServer", 
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"
+            },
+            {
                 "baseUri": "/mock/test/MapIcons/",
                 "proxyUri": "https://usgvncalix01.infor.com/IPS112/client/images/MapDrawer/MapIcons/"
             },
