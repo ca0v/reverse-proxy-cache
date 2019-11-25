@@ -34,7 +34,7 @@
         "eslint": "^6.5.1",
         "eslint-plugin-promise": "^4.2.1",
         "mocha": "^6.2.0",
-        "typescript": "^3.5.1"
+        "typescript": "^3.7.2"
     },
     "reverse-proxy-cache": {
         "port": "3002",

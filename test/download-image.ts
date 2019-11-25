@@ -1,10 +1,11 @@
-import { got } from "../server/fun/http-get";
+import { HttpsGet } from "../server/fun/http-get";
 import * as assert from "assert";
 
+let got = new HttpsGet();
 describe("download-image tests", () => {
     it("downloads a picture through the proxy", async () => {
         let actualUrl = "https://usgvncalix01.infor.com/IPS112/client/images/MapDrawer/MapIcons/AbandonedVehicle.png";
-        let response1 = await got(actualUrl).get(actualUrl, {
+        let response1 = await got.get(actualUrl, {
             rejectUnauthorized: false,
         });
         console.log(response1.body.length);
@@ -14,7 +15,7 @@ describe("download-image tests", () => {
             "PNG header is correct"
         );
         let cacheUrl = "http://localhost:3002/mock/test/MapIcons/AbandonedVehicle.png";
-        let response2 = await got(cacheUrl).get(cacheUrl);
+        let response2 = await got.get(cacheUrl);
         console.log(response2.body.length);
     });
 });

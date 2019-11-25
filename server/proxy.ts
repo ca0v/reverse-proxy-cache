@@ -17,9 +17,14 @@ export class Proxy {
         // nothing to do
     }
     proxy(url: string): ProxyInfo {
+        let proxyPass = this.config["proxy-pass"];
+        if (!proxyPass) {
+            throw "proxy-pass not found in configuration";
+        }
         let match = this.config["proxy-pass"].find(v => url.startsWith(v.baseUri));
-        if (!match)
+        if (!match) {
             return { url };
+        }
         let actualUrl = url.replace(match.baseUri, match.proxyUri);
         let cacheKey = actualUrl;
         if (match["cache-processor"]) {

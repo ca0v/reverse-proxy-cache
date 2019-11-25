@@ -4,15 +4,16 @@ import { run, Server as ProxyServer } from "../server";
 import { EchoServer } from "./echo-server";
 import { IConfig } from "../server/IConfig";
 import { verbose } from "../server/fun/stringify";
-import { HttpGet } from "../server/fun/http-get";
+import { HttpsGet } from "../server/fun/http-get";
 
 let echoPort = 3003; // + Math.round(200 * Math.random());
 let proxyPort = echoPort + 1;
 
-let got = new HttpGet();
+let got = new HttpsGet();
 
 let config: IConfig = {
     "reverse-proxy-cache": {
+        verbose: true,
         port: `${proxyPort}`,
         "reverse-proxy-db": "unittest.sqlite",
         "proxy-pass": [
@@ -97,16 +98,22 @@ describe("tests proxy server", () => {
         echo.start();
         let key = `hello ${Math.random()}`;
         // make an echo request
-        let response = await got.post(`http://localhost:${proxyPort}/mock/cache/echo`, {
-            body: key
-        });
+        let response = await got.post(
+            `http://localhost:${proxyPort}/mock/cache/echo`,
+            {
+                body: key
+            }
+        );
         assert.equal(response.body, `echo(${key})`);
         // stop echo server
         echo.stop();
         try {
-            response = await got.post(`http://localhost:${proxyPort}/mock/cache/echo`, {
-                body: key
-            });
+            response = await got.post(
+                `http://localhost:${proxyPort}/mock/cache/echo`,
+                {
+                    body: key
+                }
+            );
             assert.equal(response.body, `echo(${key})`);
         } finally {
             echo.start();
@@ -135,7 +142,10 @@ describe("tests proxy server", () => {
             })
             .then(response => {
                 // for some reason got.post isn't failing even though echo is down...just getting a null response
-                assert.ok(!response, "response is null (got.post is not failing when server is down?)");
+                assert.ok(
+                    !response,
+                    "response is null (got.post is not failing when server is down?)"
+                );
             })
             .catch(err => {
                 // this is good

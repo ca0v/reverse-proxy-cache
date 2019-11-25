@@ -3,9 +3,9 @@ import { IDb } from "./db";
 import { stringify, unstringify, verbose } from "./fun/stringify";
 import { ProxyInfo } from "./proxy";
 import { lowercase } from "./fun/lowercase";
-import { HttpGet, got as getter } from "./fun/http-get";
+import { HttpsGet } from "./fun/http-get";
 
-let got = new HttpGet();
+let got = new HttpsGet();
 
 function asBody(data: string | Array<number>) {
     return typeof data === "string" ? data : Buffer.from(data);
@@ -91,7 +91,6 @@ export class Http {
 
             verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
 
-            let got = getter(proxyInfo.url);
             let result = await got.get(proxyInfo.url, {
                 rejectUnauthorized: false,
                 method: req.method,
