@@ -6,12 +6,12 @@ import { IConfig } from "../server/IConfig";
 import { verbose } from "../server/fun/stringify";
 import { HttpsGet } from "../server/fun/http-get";
 
-let echoPort = 3003; // + Math.round(200 * Math.random());
-let proxyPort = echoPort + 1;
+const echoPort = 3003; // + Math.round(200 * Math.random());
+const proxyPort = echoPort + 1;
 
 let got = new HttpsGet();
 
-let config: IConfig = {
+const config: IConfig = {
     "reverse-proxy-cache": {
         verbose: true,
         port: `${proxyPort}`,
@@ -104,7 +104,7 @@ describe("tests proxy server", () => {
                 body: key
             }
         );
-        assert.equal(response.body, `echo(${key})`);
+        assert.equal(response.body, `echo(${key})`, "initial response is correct");
         // stop echo server
         echo.stop();
         try {
@@ -114,7 +114,7 @@ describe("tests proxy server", () => {
                     body: key
                 }
             );
-            assert.equal(response.body, `echo(${key})`);
+            assert.equal(response.body, `echo(${key})`, "cached response is correct");
         } finally {
             echo.start();
         }

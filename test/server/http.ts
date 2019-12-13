@@ -13,7 +13,25 @@ function promisify<T>(value: T) {
     return new Promise<T>(good => good(value));
 }
 
+const echoPort = 3003;
+const proxyPort = 1 + echoPort;
+
 describe("tests http", () => {
+    let echo: EchoServer;
+
+    // start proxy and echo server
+    before(async () => {
+        // start a server to proxy
+        echo = new EchoServer({ port: echoPort });
+        echo.start();
+    });
+
+    // shutdown servers
+    after(() => {
+        echo.stop();
+    });
+
+
     it("api", () => {
         assert.ok(Http.prototype.invokeDelete);
         assert.ok(Http.prototype.invokeGet);
@@ -28,9 +46,6 @@ describe("tests http", () => {
             add: (url: string, res: string) => {}
         };
 
-        let echo = new EchoServer({ port: 3003 });
-        echo.start();
-
         let http = new Http(db);
 
         let server = node_http.createServer((req, res) => {
@@ -39,17 +54,17 @@ describe("tests http", () => {
 
             http.invokeGet(
                 {
-                    url: `http://localhost:3003/echo?${querystring.stringify(query)}`
+                    url: `http://localhost:${echoPort}/echo?${querystring.stringify(query)}`
                 },
                 req,
                 res
             );
         });
 
-        server.listen(3004);
+        server.listen(proxyPort);
 
         node_http
-            .get("http://localhost:3004/echo?foo=bar&bar=foo", res => {
+            .get(`http://localhost:${proxyPort}/echo?foo=bar&bar=foo`, res => {
                 let data = ""; // what if it is binary data?
                 res.on("data", chunk => {
                     data += chunk;

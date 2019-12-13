@@ -38,8 +38,8 @@
     },
     "reverse-proxy-cache": {
         "port": "3002",
-        "reverse-proxy-db": "unittest.sqlite",
-        "verbose": false,
+        "reverse-proxy-db": "unittest2.sqlite",
+        "verbose": true,
         "proxy-pass": [
             {
        	        "baseUri": "/mock/proxy/agol/ArcGIS/rest/services/World_Street_Map/MapServer", 
@@ -66,7 +66,7 @@
             },
             {
                 "baseUri": "/mock/proxy/ags/soap/services/",
-                "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/services/"
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/services/"
             },
             {
                 "baseUri": "/mock/proxy/ags/geom/rest/services/",

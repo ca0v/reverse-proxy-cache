@@ -53,7 +53,7 @@ export class Db implements IDb {
     }
 
     add(url: string, res: string) {
-        verbose("add");
+        verbose("db.add");
         let cmd = this.db.prepare("INSERT INTO cache VALUES (?, ?)");
         let p = new Promise((resolve, reject) => {
             cmd.run(url, res, (err: string) => {

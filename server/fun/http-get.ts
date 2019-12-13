@@ -39,7 +39,7 @@ export class HttpsGet {
 
                     res.on("close", () => {
                         // close
-                        verbose("res.close", data.length);
+                        verbose(`res.close size:${data.length}`);
                         complete();
                     })
                         .on("data", chunk => {
@@ -56,12 +56,6 @@ export class HttpsGet {
                             verbose("res.error");
                             bad(err);
                         });
-                    // .on("readable", () => {
-                    //     // readable
-                    //     let chunk = res.read();
-                    //     verbose("res.readable", !!chunk && chunk.length);
-                    //     !!chunk && data.push(...chunk);
-                    // });
                 })
                 .on("error", err => {
                     verbose("req.error");
@@ -94,7 +88,10 @@ export class HttpsGet {
         return p;
     }
 
-    post(url: string, options: { body: string; method?: "POST" }) {
+    post(
+        url: string,
+        options: { body: string; method?: "POST"; rejectUnauthorized?: boolean }
+    ) {
         let protocol = url.startsWith("https://") ? https : http;
         let requestOptions = new URL(url);
         options.method = "POST";
@@ -123,7 +120,7 @@ export class HttpsGet {
 
                     res.on("close", () => {
                         // close
-                        verbose("res.close", `"${data}"`);
+                        verbose("res.close data", `"${data}"`);
                         complete();
                     })
                         .on("data", chunk => {
@@ -140,11 +137,6 @@ export class HttpsGet {
                             // error
                             verbose("res.error");
                             bad(err);
-                        })
-                        .on("readable", () => {
-                            // readable
-                            verbose("res.readable");
-                            data += res.read();
                         });
                 })
                 .on("error", err => {
@@ -186,4 +178,3 @@ export class HttpsGet {
         return p;
     }
 }
-
