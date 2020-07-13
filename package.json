@@ -42,12 +42,12 @@
         "verbose": true,
         "proxy-pass": [
             {
-                "baseUri": "/mock/proxy/arcgis", 
-                "proxyUri":"https://www.arcgis.com",
-                "no-cache": true
+                "about": "tests token generation for OAUTH2",
+                "baseUri": "/mock/proxy/arcgis",
+                "proxyUri": "https://www.arcgis.com"
             },
             {
-       	        "baseUri": "/mock/proxy/agol/ArcGIS/rest/services/World_Street_Map/MapServer", 
+                "baseUri": "/mock/proxy/agol/ArcGIS/rest/services/World_Street_Map/MapServer",
                 "cache-processor": "ignore-callback-querystring",
                 "proxyUri": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"
             },
@@ -154,9 +154,9 @@
                 "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
             },
             {
-                "baseUri":"/mock/proxy/ags/rest/services/annotations/FeatureServer",
+                "baseUri": "/mock/proxy/ags/rest/services/annotations/FeatureServer",
                 "cache-processor": "ignore-callback-querystring",
-                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"            
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
             }
         ]
     }
