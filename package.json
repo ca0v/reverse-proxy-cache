@@ -9,7 +9,7 @@
     "scripts": {
         "lint": "eslint ./built",
         "test": "mocha ./bin/test/test.js -b",
-        "debug:test": "npm run test -- --debug-brk",
+        "debug:test": "npm run test -- --inspect-brk",
         "server": "node ./bin/cli.js",
         "watch:test": "npm run test -- -w",
         "watch:build": "npm run build -- -w",
@@ -41,6 +41,11 @@
         "reverse-proxy-db": "unittest2.sqlite",
         "verbose": true,
         "proxy-pass": [
+            {
+                "baseUri": "/mock/proxy/arcgis", 
+                "proxyUri":"https://www.arcgis.com",
+                "no-cache": true
+            },
             {
        	        "baseUri": "/mock/proxy/agol/ArcGIS/rest/services/World_Street_Map/MapServer", 
                 "cache-processor": "ignore-callback-querystring",
@@ -142,6 +147,16 @@
                 "baseUri": "/mock/proxy/ags/public/rest/services/",
                 "cache-processor": "ignore-callback-querystring",
                 "proxyUri": "https://server.arcgisonline.com/ArcGIS/rest/services/"
+            },
+            {
+                "baseUri": "/mock/proxy/ags/soap/rest/services/IPS112/SQL2v112/MapServer",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
+            },
+            {
+                "baseUri":"/mock/proxy/ags/rest/services/annotations/FeatureServer",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"            
             }
         ]
     }

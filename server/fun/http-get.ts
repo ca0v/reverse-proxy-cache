@@ -21,7 +21,7 @@ export class HttpsGet {
             headers: IHttp.IncomingHttpHeaders;
         }>((good, bad) => {
             let req = protocol
-                .request(urlOptions, requestOptions, res => {
+                .request(urlOptions, requestOptions, (res) => {
                     let mimeType = res.headers["content-type"] || "text/plain";
                     let isBinary = isBinaryMimeType(mimeType);
                     verbose({ mimeType, isBinary });
@@ -34,7 +34,7 @@ export class HttpsGet {
                             body: isBinary ? data : bufferToString(data),
                             headers: res.headers,
                             statusCode: res.statusCode || 0,
-                            statusMessage: res.statusMessage || ""
+                            statusMessage: res.statusMessage || "",
                         });
 
                     res.on("close", () => {
@@ -42,7 +42,7 @@ export class HttpsGet {
                         verbose(`res.close size:${data.length}`);
                         complete();
                     })
-                        .on("data", chunk => {
+                        .on("data", (chunk) => {
                             // data
                             verbose("res.data", chunk.length);
                             data.push(...chunk);
@@ -51,13 +51,13 @@ export class HttpsGet {
                             // end
                             verbose("res.end");
                         })
-                        .on("error", err => {
+                        .on("error", (err) => {
                             // error
                             verbose("res.error");
                             bad(err);
                         });
                 })
-                .on("error", err => {
+                .on("error", (err) => {
                     verbose("req.error");
                     bad(err);
                 })
@@ -90,7 +90,12 @@ export class HttpsGet {
 
     post(
         url: string,
-        options: { body: string; method?: "POST"; rejectUnauthorized?: boolean }
+        options: {
+            body: string;
+            method?: "POST";
+            rejectUnauthorized?: boolean;
+            headers?: any;
+        }
     ) {
         let protocol = url.startsWith("https://") ? https : http;
         let requestOptions = new URL(url);
@@ -108,14 +113,14 @@ export class HttpsGet {
             headers: http.IncomingHttpHeaders;
         }>((good, bad) => {
             let req = protocol
-                .request(requestOptions, options, res => {
+                .request(requestOptions, options, (res) => {
                     let data: string = "";
                     let complete = () =>
                         good({
                             body: data,
                             headers: res.headers,
                             statusCode: res.statusCode || 0,
-                            statusMessage: res.statusMessage || ""
+                            statusMessage: res.statusMessage || "",
                         });
 
                     res.on("close", () => {
@@ -123,7 +128,7 @@ export class HttpsGet {
                         verbose("res.close data", `"${data}"`);
                         complete();
                     })
-                        .on("data", chunk => {
+                        .on("data", (chunk) => {
                             // data
                             verbose("res.data", chunk);
                             data += chunk;
@@ -133,13 +138,13 @@ export class HttpsGet {
                             verbose("res.end");
                             complete();
                         })
-                        .on("error", err => {
+                        .on("error", (err) => {
                             // error
                             verbose("res.error");
                             bad(err);
                         });
                 })
-                .on("error", err => {
+                .on("error", (err) => {
                     verbose("req.error", err);
                     bad(err);
                 })
@@ -165,7 +170,7 @@ export class HttpsGet {
                 });
 
             verbose("write.body", body);
-            req.write(body, err => {
+            req.write(body, (err) => {
                 // write
                 verbose("write.err", err || "");
             });

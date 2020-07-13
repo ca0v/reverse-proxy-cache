@@ -58,7 +58,7 @@ export class Http {
         verbose("invoke proxy info: ", proxyInfo);
         let cacheKey = stringify({
             method: req.method,
-            url: proxyInfo.key || proxyInfo.url || req.url || ""
+            url: proxyInfo.key || proxyInfo.url || req.url || "",
         });
 
         let requestHeaders = lowercase(req.headers);
@@ -83,7 +83,7 @@ export class Http {
 
                 if (!!proxyInfo.processors) {
                     proxyInfo.processors.forEach(
-                        processor =>
+                        (processor) =>
                             (result.body = processor.processResponse(
                                 proxyInfo.url,
                                 result.body
@@ -127,7 +127,7 @@ export class Http {
             let result = await got.get(proxyInfo.url, {
                 rejectUnauthorized: false,
                 method: req.method,
-                headers: requestHeaders
+                headers: requestHeaders,
             });
 
             let resultHeaders = lowercase(result.headers);
@@ -140,7 +140,7 @@ export class Http {
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
                 "access-control-allow-headers":
-                    resultHeaders["access-control-allow-headers"] || "*"
+                    resultHeaders["access-control-allow-headers"] || "*",
             };
 
             verbose(
@@ -161,7 +161,7 @@ export class Http {
                         statusCode: result.statusCode,
                         statusMessage: result.statusMessage,
                         headers: lowercase(resultHeaders),
-                        body: result.body
+                        body: result.body,
                     })
                 );
             }
@@ -173,7 +173,7 @@ export class Http {
     private failure(ex: any, res: http.ServerResponse) {
         res.writeHead(500, {
             "content-type": "text/plain",
-            body: ex
+            body: ex,
         });
         res.end();
     }
@@ -187,15 +187,15 @@ export class Http {
         let cacheKey = {
             url: req.url,
             method: req.method,
-            request: ""
+            request: "",
         };
         return new Promise((good, bad) => {
             // collect the request body
-            req.on("error", err => {
+            req.on("error", (err) => {
                 verbose("invokePost.error");
                 bad(err);
             })
-                .on("data", chunk => {
+                .on("data", (chunk) => {
                     verbose("invokePost.data");
                     cacheKey.request += chunk;
                 })
@@ -227,9 +227,12 @@ export class Http {
                             }
                         }
                         // invoke actual service, cache the response
+                        const reqHeader = lowercase(req.headers);
+                        const reqData = cacheKey.request; // query string format
                         let value = await got.post(url.url, {
                             rejectUnauthorized: false,
-                            body: cacheKey.request
+                            body: reqData,
+                            headers: reqHeader,
                         });
 
                         let valueHeaders = lowercase(value.headers);
@@ -248,7 +251,7 @@ export class Http {
                                     statusCode: value.statusCode,
                                     statusMessage: value.statusMessage,
                                     body: value.body,
-                                    headers: valueHeaders
+                                    headers: valueHeaders,
                                 })
                             );
                         }
