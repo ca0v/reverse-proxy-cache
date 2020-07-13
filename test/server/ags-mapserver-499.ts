@@ -7,8 +7,8 @@ import * as querystring from "querystring";
 // Invalid request <br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens?request=gettoken&username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/generateToken?username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/gettoken.html<br>
 // when using sampleserver5 I get ETIMEOUT although service works from the browser.
 describe("server/ags", () => {
-    false &&
-        it("access a secure service", async () => {
+    it("access a secure service", async () => {
+        return new Promise((good, bad) => {
             const data = JSON.stringify({
                 f: "json",
                 username: "user1",
@@ -24,24 +24,27 @@ describe("server/ags", () => {
                     rejectUnauthorized: false,
                     hostname: "sampleserver6.arcgisonline.com",
                     method: "POST",
-                    port: 6443,
+                    port: 443,
                     path: "/arcgis/tokens/generateToken",
                 },
                 (res) => {
                     res.on("data", (d) => {
                         console.log(d.toString());
+                        good(d);
                     });
                 }
             );
 
             request.on("error", (err) => {
                 console.error(err);
+                bad(err);
             });
 
             console.log(data);
             request.write(data);
             request.end();
         });
+    });
 
     it("generate a token from https://www.arcgis.com/sharing/oauth2/token", async () => {
         return new Promise((good, bad) => {
