@@ -1,7 +1,11 @@
 require("dotenv").config();
+import * as fs from "fs";
 import * as http from "http";
 import { Db } from "./server/db";
-import { IConfig, ReverseProxyCache as ReverseProxyCacheConfig } from "./server/IConfig";
+import {
+    IConfig,
+    ReverseProxyCache as ReverseProxyCacheConfig,
+} from "./server/IConfig";
 import { verbose as dump } from "./server/fun/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
@@ -12,8 +16,10 @@ export class Server {
     private config: ReverseProxyCacheConfig;
 
     constructor(config: IConfig) {
-        if (!config["reverse-proxy-cache"]) throw "missing configuration: reverse-proxy-cache not found";
-        if (!config["reverse-proxy-cache"].port) throw "missing configuration: reverse-proxy-cache/port not found";
+        if (!config["reverse-proxy-cache"])
+            throw "missing configuration: reverse-proxy-cache not found";
+        if (!config["reverse-proxy-cache"].port)
+            throw "missing configuration: reverse-proxy-cache/port not found";
         if (!config["reverse-proxy-cache"]["reverse-proxy-db"])
             throw "missing configuration: reverse-proxy-cache/reverse-proxy-db not found";
         if (!config["reverse-proxy-cache"]["proxy-pass"])
@@ -62,13 +68,23 @@ export class Server {
                         helper.invokePut(proxyurl, req, res);
                         break;
                     default:
-                        res.writeHead(500, `unsupported method: ${req.method}`, { "content-type": "text/plain" });
+                        res.writeHead(
+                            500,
+                            `unsupported method: ${req.method}`,
+                            { "content-type": "text/plain" }
+                        );
                         res.end();
                         break;
                 }
             } catch (ex) {
-                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
-                res.writeHead(500, `${(ex + "").substring(0, 16)}`, { "content-type": "text/plain", body: ex });
+                this.verbose(
+                    `${req.method} request failed for ${proxyurl}:\n`,
+                    ex
+                );
+                res.writeHead(500, `${(ex + "").substring(0, 16)}`, {
+                    "content-type": "text/plain",
+                    body: ex,
+                });
                 res.end();
                 return;
             }
@@ -85,6 +101,83 @@ export class Server {
     }
 }
 
-export async function run(config: IConfig) {
-    return new Server(config).start();
+interface Dictionary<T> {
+    [index: string]: T;
+}
+
+function addHandler(
+    switchName: string,
+    gatewayFile: string,
+    externalUri: string,
+    internalName: string
+) {
+    if ("--add" !== switchName) throw "invalid switch";
+    if (!gatewayFile)
+        throw `you must specify a target package.json files as the 1st argument`;
+    if (!externalUri)
+        throw "you must specify the external uri as the second argument";
+    if (!internalName)
+        throw "you must specify an internal identifier as the third argument";
+    if (!fs.existsSync(gatewayFile)) throw `file not found: ${gatewayFile}`;
+    const config = JSON.parse(fs.readFileSync(gatewayFile) + "") as IConfig;
+    const cache = (config["reverse-proxy-cache"] = config[
+        "reverse-proxy-cache"
+    ] || {
+        port: 3002,
+        verbose: false,
+        "reverse-proxy-db": "reverse-proxy.sqlite",
+    });
+    const pass = (cache["proxy-pass"] = cache["proxy-pass"] || []);
+    const baseUri = `/proxy/${internalName}`;
+    const originalBase = pass.find((p) => p.baseUri === baseUri);
+    const base = originalBase || {
+        about: "",
+        baseUri: "",
+        proxyUri: "",
+    };
+    base.baseUri = baseUri;
+    base.proxyUri = externalUri;
+    base.about = base.about || internalName;
+    if (!originalBase) pass.unshift(base);
+    fs.writeFileSync(gatewayFile, JSON.stringify(config, null, "  "));
+}
+
+function initHandler(switchName: string, gatewayFile?: string) {
+    if ("--init" !== switchName) throw "invalid switch";
+    gatewayFile = gatewayFile || "package.json";
+    addHandler("--add", gatewayFile, "https://www.arcgis.com", "arcgis");
+    addHandler(
+        "--add",
+        gatewayFile,
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer",
+        "agol/ArcGIS/rest/services/World_Street_Map/MapServer"
+    );
+}
+
+const handlers: Dictionary<(...args: string[]) => void> = {
+    init: initHandler,
+    add: addHandler,
+};
+
+export async function run(args: string[] | IConfig) {
+    if (Array.isArray(args)) {
+        let primarySwitch = args[0];
+        if (primarySwitch?.startsWith("--")) {
+            const handlerName = primarySwitch.substring(2);
+            const handler = handlers[handlerName];
+            if (!handler) throw `no handler found for ${handlerName}`;
+            return handler(...args);
+        } else {
+            // default handler
+            const gatewayFile = primarySwitch || "package.json";
+            if (!fs.existsSync(gatewayFile))
+                throw "file not found: " + gatewayFile;
+            const config = JSON.parse(
+                fs.readFileSync(gatewayFile) + ""
+            ) as IConfig;
+            return new Server(config).start();
+        }
+    } else {
+        return new Server(args).start();
+    }
 }

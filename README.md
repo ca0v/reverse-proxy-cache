@@ -16,7 +16,9 @@ Reverse Proxy with Caching to facilitate service oriented unit tests
 
 ## Cli
 
--   `npx reverse-proxy-cache`
+-   `npx reverse-proxy-cache [package.json]`
+-   `npx reverse-proxy-cache --init`
+-   `npx reverse-proxy-cache --add package.json https://www.arcgis.com arcgis`
 
 ## Configure
 
@@ -38,8 +40,9 @@ interface IConfig {
 
 ## History
 
--   v1.0.0 - supports GET only
+-   v1.0.2 - adds --init and --add commands
 -   v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
+-   v1.0.0 - supports GET only
 
 ## Issues
 

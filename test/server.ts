@@ -45,7 +45,7 @@ const config: IConfig = {
 };
 
 describe("tests proxy server", () => {
-    let proxy: ProxyServer;
+    let proxy: ProxyServer | void;
     let echo: EchoServer;
 
     // start proxy and echo server
@@ -60,7 +60,7 @@ describe("tests proxy server", () => {
 
     // shutdown servers
     after(() => {
-        proxy.stop();
+        proxy && proxy.stop();
         echo.stop();
     });
 

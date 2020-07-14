@@ -23,7 +23,7 @@ const config: IConfig = {
 
 
 describe("download-image tests", () => {
-    let proxy: ProxyServer;
+    let proxy: ProxyServer | void;
 
     // start proxy and echo server
     before(async () => {
@@ -33,7 +33,7 @@ describe("download-image tests", () => {
 
     // shutdown servers
     after(() => {
-        proxy.stop();
+        proxy && proxy.stop();
     });
 
     it("downloads a picture through the proxy", async () => {
