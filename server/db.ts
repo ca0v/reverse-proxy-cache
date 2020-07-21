@@ -20,8 +20,7 @@ export class Db implements IDb {
     }
 
     close() {
-        // not sure how to close the connection, continually errros with `SQLITE_BUSY: unable to close due to unfinalized statements or unfinished backups`
-        //this.exists("foo").then(() => this.db.close());
+        this.db.close();
     }
 
     static async init(config: ReverseProxyCache) {
@@ -51,6 +50,7 @@ export class Db implements IDb {
                 err ? reject(err) : resolve(row && row.res);
                 verbose(row ? "hit" : "miss");
             });
+            cmd.finalize();
         });
         return p;
     }
@@ -60,6 +60,7 @@ export class Db implements IDb {
         let cmd = this.db.prepare("INSERT INTO cache VALUES (?, ?)");
         let p = new Promise((resolve, reject) => {
             cmd.run(url, res, (err: string) => {
+                cmd.finalize();
                 err ? reject(err) : resolve();
             });
         });
