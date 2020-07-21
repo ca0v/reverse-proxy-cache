@@ -111,7 +111,7 @@ class Http {
     async invokePost(url, req, res) {
         console.assert(req.method === "POST");
         let cacheKey = {
-            url: req.url,
+            url: url.key || url.url || req.url || "",
             method: req.method,
             request: "",
         };
@@ -147,7 +147,11 @@ class Http {
                     let value = await got.post(url.url, {
                         rejectUnauthorized: false,
                         body: reqData,
-                        headers: reqHeader,
+                        headers: {
+                            "content-type": reqHeader["content-type"] || "plain-text",
+                            "content-length": reqHeader["content-length"] ||
+                                reqData.length,
+                        },
                     });
                     let valueHeaders = lowercase_1.lowercase(value.headers);
                     res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);

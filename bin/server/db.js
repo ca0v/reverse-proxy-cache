@@ -7,18 +7,17 @@ class Db {
     constructor(config) {
         let dbFile = config["reverse-proxy-db"];
         config.verbose && stringify_1.verbose(`loading ${dbFile}`);
-        this.db = new sqlite3.Database(dbFile);
+        this.db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
     }
     close() {
-        // not sure how to close the connection, continually errros with `SQLITE_BUSY: unable to close due to unfinalized statements or unfinished backups`
-        //this.exists("foo").then(() => this.db.close());
+        this.db.close();
     }
     static async init(config) {
         let result = new Db(config);
         return new Promise((resolve, reject) => {
             return result.db.run("CREATE TABLE cache (url TEXT, res TEXT)", () => {
                 resolve(result);
-            }, err => {
+            }, (err) => {
                 if ("" + err !==
                     "Error: SQLITE_ERROR: table cache already exists")
                     reject(err);
@@ -33,6 +32,7 @@ class Db {
                 err ? reject(err) : resolve(row && row.res);
                 stringify_1.verbose(row ? "hit" : "miss");
             });
+            cmd.finalize();
         });
         return p;
     }
@@ -41,6 +41,7 @@ class Db {
         let cmd = this.db.prepare("INSERT INTO cache VALUES (?, ?)");
         let p = new Promise((resolve, reject) => {
             cmd.run(url, res, (err) => {
+                cmd.finalize();
                 err ? reject(err) : resolve();
             });
         });

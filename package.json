@@ -38,7 +38,7 @@
     },
     "reverse-proxy-cache": {
         "port": "3002",
-        "reverse-proxy-db": "unittest2.sqlite",
+        "reverse-proxy-db": "ipsunittests.sqlite",
         "verbose": true,
         "proxy-pass": [
             {
@@ -157,6 +157,10 @@
                 "baseUri": "/mock/proxy/ags/rest/services/annotations/FeatureServer",
                 "cache-processor": "ignore-callback-querystring",
                 "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
+            },
+            {
+                "baseUri": "/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer",
+                "proxyUri":"https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer"
             }
         ]
     }
