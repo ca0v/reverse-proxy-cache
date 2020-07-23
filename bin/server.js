@@ -1,34 +1,32 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.run = exports.Server = void 0;
 require("dotenv").config();
-import * as fs from "fs";
-import * as http from "http";
-import { Db } from "./server/db";
-import {
-    IConfig,
-    ReverseProxyCache as ReverseProxyCacheConfig,
-} from "./server/IConfig";
-import { verbose as dump } from "./server/fun/stringify";
-import { Proxy } from "./server/proxy";
-import { Http } from "./server/http";
-
-function sort(o: any): any {
-    if (null === o) return o;
-    if (undefined === o) return o;
-    if (typeof o !== "object") return o;
+const fs = require("fs");
+const http = require("http");
+const db_1 = require("./server/db");
+const stringify_1 = require("./server/fun/stringify");
+const proxy_1 = require("./server/proxy");
+const http_1 = require("./server/http");
+function sort(o) {
+    if (null === o)
+        return o;
+    if (undefined === o)
+        return o;
+    if (typeof o !== "object")
+        return o;
     if (Array.isArray(o)) {
         return o.map((item) => sort(item));
     }
     const keys = Object.keys(o).sort();
-    const result = <any>{};
+    const result = {};
     keys.forEach((k) => (result[k] = sort(o[k])));
     return result;
 }
-
-export class Server {
-    private server: http.Server | null = null;
-    private cache: Db | null = null;
-    private config: ReverseProxyCacheConfig;
-
-    constructor(config: IConfig) {
+class Server {
+    constructor(config) {
+        this.server = null;
+        this.cache = null;
         if (!config["reverse-proxy-cache"])
             throw "missing configuration: reverse-proxy-cache not found";
         if (!config["reverse-proxy-cache"].port)
@@ -39,20 +37,19 @@ export class Server {
             throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
         this.config = config["reverse-proxy-cache"];
     }
-
-    private verbose(...args: string[]) {
-        if (!this.config.verbose) return;
-        dump(...args);
+    verbose(...args) {
+        if (!this.config.verbose)
+            return;
+        stringify_1.verbose(...args);
     }
-
     async start() {
         let config = this.config;
-
-        const cache = await Db.init(config);
+        const cache = await db_1.Db.init(config);
         this.cache = cache;
-        if (!cache) throw "db failed to return a database connection";
-        let proxy = new Proxy(config);
-        let helper = new Http(cache);
+        if (!cache)
+            throw "db failed to return a database connection";
+        let proxy = new proxy_1.Proxy(config);
+        let helper = new http_1.Http(cache);
         this.server = http.createServer(async (req, res) => {
             let url = req.url || "";
             let proxyurl = proxy.proxy(url);
@@ -81,19 +78,13 @@ export class Server {
                         helper.invokePut(proxyurl, req, res);
                         break;
                     default:
-                        res.writeHead(
-                            500,
-                            `unsupported method: ${req.method}`,
-                            { "content-type": "text/plain" }
-                        );
+                        res.writeHead(500, `unsupported method: ${req.method}`, { "content-type": "text/plain" });
                         res.end();
                         break;
                 }
-            } catch (ex) {
-                this.verbose(
-                    `${req.method} request failed for ${proxyurl}:\n`,
-                    ex
-                );
+            }
+            catch (ex) {
+                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
                 res.writeHead(500, `${(ex + "").substring(0, 16)}`, {
                     "content-type": "text/plain",
                     body: ex,
@@ -107,35 +98,27 @@ export class Server {
         this.verbose(`listening on ${port}`);
         return this;
     }
-
     stop() {
-        if (this.server) this.server.close();
-        if (this.cache) this.cache.close();
+        if (this.server)
+            this.server.close();
+        if (this.cache)
+            this.cache.close();
     }
 }
-
-interface Dictionary<T> {
-    [index: string]: T;
-}
-
-function addHandler(
-    switchName: string,
-    gatewayFile: string,
-    externalUri: string,
-    internalName: string
-) {
-    if ("--add" !== switchName) throw "invalid switch";
+exports.Server = Server;
+function addHandler(switchName, gatewayFile, externalUri, internalName) {
+    if ("--add" !== switchName)
+        throw "invalid switch";
     if (!gatewayFile)
         throw `you must specify a target package.json files as the 1st argument`;
     if (!externalUri)
         throw "you must specify the external uri as the second argument";
     if (!internalName)
         throw "you must specify an internal identifier as the third argument";
-    if (!fs.existsSync(gatewayFile)) throw `file not found: ${gatewayFile}`;
-    const config = JSON.parse(fs.readFileSync(gatewayFile) + "") as IConfig;
-    const cache = (config["reverse-proxy-cache"] = config[
-        "reverse-proxy-cache"
-    ] || {
+    if (!fs.existsSync(gatewayFile))
+        throw `file not found: ${gatewayFile}`;
+    const config = JSON.parse(fs.readFileSync(gatewayFile) + "");
+    const cache = (config["reverse-proxy-cache"] = config["reverse-proxy-cache"] || {
         port: 3002,
         verbose: false,
         "reverse-proxy-db": "reverse-proxy.sqlite",
@@ -151,49 +134,46 @@ function addHandler(
     base.baseUri = baseUri;
     base.proxyUri = externalUri;
     base.about = base.about || internalName;
-    if (!originalBase) pass.unshift(base);
+    if (!originalBase)
+        pass.unshift(base);
     pass.sort((a, b) => a.baseUri.localeCompare(b.baseUri));
     pass.forEach((p) => (p.about = p.about || "this proxy is used to..."));
     cache["proxy-pass"] = sort(cache["proxy-pass"]);
     fs.writeFileSync(gatewayFile, JSON.stringify(config, null, 2));
 }
-
-function initHandler(switchName: string, gatewayFile?: string) {
-    if ("--init" !== switchName) throw "invalid switch";
+function initHandler(switchName, gatewayFile) {
+    if ("--init" !== switchName)
+        throw "invalid switch";
     gatewayFile = gatewayFile || "package.json";
     addHandler("--add", gatewayFile, "https://www.arcgis.com", "arcgis");
-    addHandler(
-        "--add",
-        gatewayFile,
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer",
-        "agol/ArcGIS/rest/services/World_Street_Map/MapServer"
-    );
+    addHandler("--add", gatewayFile, "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer", "agol/ArcGIS/rest/services/World_Street_Map/MapServer");
 }
-
-const handlers: Dictionary<(...args: string[]) => void> = {
+const handlers = {
     init: initHandler,
     add: addHandler,
 };
-
-export async function run(args: string[] | IConfig) {
+async function run(args) {
     if (Array.isArray(args)) {
         let primarySwitch = args[0];
-        if (primarySwitch?.startsWith("--")) {
+        if (primarySwitch === null || primarySwitch === void 0 ? void 0 : primarySwitch.startsWith("--")) {
             const handlerName = primarySwitch.substring(2);
             const handler = handlers[handlerName];
-            if (!handler) throw `no handler found for ${handlerName}`;
+            if (!handler)
+                throw `no handler found for ${handlerName}`;
             return handler(...args);
-        } else {
+        }
+        else {
             // default handler
             const gatewayFile = primarySwitch || "package.json";
             if (!fs.existsSync(gatewayFile))
                 throw "file not found: " + gatewayFile;
-            const config = JSON.parse(
-                fs.readFileSync(gatewayFile) + ""
-            ) as IConfig;
+            const config = JSON.parse(fs.readFileSync(gatewayFile) + "");
             return new Server(config).start();
         }
-    } else {
+    }
+    else {
         return new Server(args).start();
     }
 }
+exports.run = run;
+//# sourceMappingURL=server.js.map

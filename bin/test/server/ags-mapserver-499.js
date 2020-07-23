@@ -1,21 +1,19 @@
-import * as assert from "assert";
-import * as http from "http";
-import * as https from "https";
-import * as querystring from "querystring";
-import { HttpsGet } from "../../server/fun/http-get";
-import { run, Server as ProxyServer } from "../../server";
-import { IConfig } from "../../server/IConfig";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const assert = require("assert");
+const http = require("http");
+const https = require("https");
+const querystring = require("querystring");
+const http_get_1 = require("../../server/fun/http-get");
+const server_1 = require("../../server");
 describe("agol raw post", () => {
     it("access https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer via hosted server (POST)", async () => {
-        const got = new HttpsGet();
+        const got = new http_get_1.HttpsGet();
         const cacheUrl = `https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
-
         const data = querystring.stringify({
             f: "json",
             token: "abc",
         });
-
         const response1 = await got.post(cacheUrl, {
             body: data,
             headers: {
@@ -27,66 +25,52 @@ describe("agol raw post", () => {
         const body = JSON.parse(response1.body.toString());
         assert.strictEqual(body.error.code, 498);
     });
-
     it("access https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer via hosted server (POST)", (done) => {
         // this POST message does not work...the "got" library is not sending the token to the server
         // the c# code works using FormUrlEncodedContent, maybe replace "got" with https?
         const cacheUrl = `https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
-
         const data = querystring.stringify({
             f: "json",
             token: "invalidtokenvalue",
         });
-
         let response = "";
-
-        const req = https.request(
-            {
-                host: "services7.arcgis.com",
-                port: 443,
-                method: "POST",
-                path:
-                    "/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Content-Length": data.length,
-                },
+        const req = https.request({
+            host: "services7.arcgis.com",
+            port: 443,
+            method: "POST",
+            path: "/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Length": data.length,
             },
-            (res) => {
-                res.on("data", (data) => {
-                    response += data;
-                    console.log("data", response);
-                });
-            }
-        );
-
+        }, (res) => {
+            res.on("data", (data) => {
+                response += data;
+                console.log("data", response);
+            });
+        });
         req.on("close", () => {
             console.log("close", response);
             const result = JSON.parse(response);
             assert.equal(result.error.code, 498);
             done();
         });
-
         req.on("error", (err) => {
             console.log("error", err);
         });
         req.on("drain", () => {
             console.log("drain", response);
         });
-
         req.write(data, "application/json", (err) => {
             console.log("error", err);
         });
-
         req.end();
     });
 });
-
 describe("agol", () => {
-    const got = new HttpsGet();
+    const got = new http_get_1.HttpsGet();
     const proxyPort = 3004;
-
-    const config: IConfig = {
+    const config = {
         "reverse-proxy-cache": {
             verbose: true,
             port: `${proxyPort}`,
@@ -94,27 +78,22 @@ describe("agol", () => {
             "proxy-pass": [
                 {
                     about: "test auth against agol",
-                    baseUri:
-                        "/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer",
-                    proxyUri:
-                        "https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
+                    baseUri: "/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer",
+                    proxyUri: "https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
                 },
             ],
         },
     };
-    let proxy: ProxyServer | void;
-
+    let proxy;
     // start proxy and echo server
     before(async () => {
         // start the proxy server
-        proxy = await run(config);
+        proxy = await server_1.run(config);
     });
-
     // shutdown servers
     after(() => {
         proxy && proxy.stop();
     });
-
     it("access https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer via hosted server (GET)", async () => {
         const cacheUrl = `https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer?f=json&token=abc`;
         const response1 = await got.get(cacheUrl);
@@ -122,7 +101,6 @@ describe("agol", () => {
         const body = JSON.parse(response1.body.toString());
         assert.strictEqual(body.error.code, 498);
     });
-
     it("access /mock/arcgis/rest/services/Feature_Service_Test/FeatureServer via hosted server (POST)", async () => {
         const cacheUrl = `http://localhost:${proxyPort}/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
         const data = querystring.stringify({ f: "json", token: "abc" });
@@ -137,7 +115,6 @@ describe("agol", () => {
         const body = JSON.parse(response1.body.toString());
         assert.strictEqual(body.error.code, 498);
     });
-
     it("access /mock/arcgis/rest/services/Feature_Service_Test/FeatureServer (GET)", async () => {
         const cacheUrl = `http://localhost:3002/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer?f=json&token=abc`;
         const response1 = await got.get(cacheUrl);
@@ -145,14 +122,12 @@ describe("agol", () => {
         const body = JSON.parse(response1.body.toString());
         assert.strictEqual(body.error.code, 498);
     });
-
     it("access /mock/arcgis/rest/services/Feature_Service_Test/FeatureServer (POST)", async () => {
         const cacheUrl = `http://localhost:3002/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
         const data = querystring.stringify({
             f: "json",
             token: "abc",
         });
-
         const response1 = await got.post(cacheUrl, {
             body: data,
             headers: {
@@ -165,7 +140,6 @@ describe("agol", () => {
         assert.strictEqual(body.error.code, 498);
     });
 });
-
 // this is failing with the following response:
 // Invalid request <br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens?request=gettoken&username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/generateToken?username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/gettoken.html<br>
 // when using sampleserver5 I get ETIMEOUT although service works from the browser.
@@ -181,34 +155,27 @@ describe("server/ags", () => {
                 referer: "https://www.arcgis.com",
                 expiration: 60,
             });
-
-            const request = https.request(
-                {
-                    rejectUnauthorized: false,
-                    hostname: "sampleserver6.arcgisonline.com",
-                    method: "POST",
-                    port: 443,
-                    path: "/arcgis/tokens/generateToken",
-                },
-                (res) => {
-                    res.on("data", (d) => {
-                        console.log(d.toString());
-                        good(d);
-                    });
-                }
-            );
-
+            const request = https.request({
+                rejectUnauthorized: false,
+                hostname: "sampleserver6.arcgisonline.com",
+                method: "POST",
+                port: 443,
+                path: "/arcgis/tokens/generateToken",
+            }, (res) => {
+                res.on("data", (d) => {
+                    console.log(d.toString());
+                    good(d);
+                });
+            });
             request.on("error", (err) => {
                 console.error(err);
                 bad(err);
             });
-
             console.log(data);
             request.write(data);
             request.end();
         });
     });
-
     it("generate a token from https://www.arcgis.com/sharing/oauth2/token", async () => {
         return new Promise((good, bad) => {
             // frustrated trying to generate a token via generateToken, trying oauth2 in hopes to actually get a usable result (not sure ags supports oauth2 so need generateToken to work as well)
@@ -222,37 +189,30 @@ describe("server/ags", () => {
                 client_secret: "9e0233c26bb94ee8a1f392e3ecb1b04c",
                 grant_type: "client_credentials",
             });
-
-            const request = https.request(
-                {
-                    rejectUnauthorized: true,
-                    hostname: "www.arcgis.com",
-                    method: "POST",
-                    port: 443,
-                    path: "/sharing/oauth2/token",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "Content-Length": data.length,
-                    },
+            const request = https.request({
+                rejectUnauthorized: true,
+                hostname: "www.arcgis.com",
+                method: "POST",
+                port: 443,
+                path: "/sharing/oauth2/token",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Content-Length": data.length,
                 },
-                (res) => {
-                    res.on("data", (d) => {
-                        const data = JSON.parse(d);
-                        !data.error ? good(data) : bad(data);
-                    });
-                }
-            );
-
+            }, (res) => {
+                res.on("data", (d) => {
+                    const data = JSON.parse(d);
+                    !data.error ? good(data) : bad(data);
+                });
+            });
             request.on("error", (err) => {
                 bad(err);
             });
-
             console.log(data);
             request.write(data);
             request.end();
         });
     });
-
     it("generate a token from http://localhost:3002/mock/proxy/arcgis/sharing/oauth2/token", async () => {
         return new Promise((good, bad) => {
             const data = querystring.stringify({
@@ -261,33 +221,28 @@ describe("server/ags", () => {
                 client_secret: "9e0233c26bb94ee8a1f392e3ecb1b04c",
                 grant_type: "client_credentials",
             });
-
-            const request = http.request(
-                {
-                    hostname: "localhost",
-                    method: "POST",
-                    port: 3002,
-                    path: "/mock/proxy/arcgis/sharing/oauth2/token",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "Content-Length": data.length,
-                    },
+            const request = http.request({
+                hostname: "localhost",
+                method: "POST",
+                port: 3002,
+                path: "/mock/proxy/arcgis/sharing/oauth2/token",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Content-Length": data.length,
                 },
-                (res) => {
-                    res.on("data", (d) => {
-                        const data = JSON.parse(d);
-                        !data.error ? good(data) : bad(data);
-                    });
-                }
-            );
-
+            }, (res) => {
+                res.on("data", (d) => {
+                    const data = JSON.parse(d);
+                    !data.error ? good(data) : bad(data);
+                });
+            });
             request.on("error", (err) => {
                 bad(err);
             });
-
             console.log(data);
             request.write(data);
             request.end();
         });
     });
 });
+//# sourceMappingURL=ags-mapserver-499.js.map
