@@ -10,6 +10,19 @@ import { verbose as dump } from "./server/fun/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
 
+function sort(o: any): any {
+    if (null === o) return o;
+    if (undefined === o) return o;
+    if (typeof o !== "object") return o;
+    if (Array.isArray(o)) {
+        return o.map((item) => sort(item));
+    }
+    const keys = Object.keys(o).sort();
+    const result = <any>{};
+    keys.forEach((k) => (result[k] = sort(o[k])));
+    return result;
+}
+
 export class Server {
     private server: http.Server | null = null;
     private cache: Db | null = null;
@@ -139,7 +152,10 @@ function addHandler(
     base.proxyUri = externalUri;
     base.about = base.about || internalName;
     if (!originalBase) pass.unshift(base);
-    fs.writeFileSync(gatewayFile, JSON.stringify(config, null, "  "));
+    pass.sort((a, b) => a.baseUri.localeCompare(b.baseUri));
+    pass.forEach((p) => (p.about = p.about || "this proxy is used to..."));
+    cache["proxy-pass"] = sort(cache["proxy-pass"]);
+    fs.writeFileSync(gatewayFile, JSON.stringify(config, null, 2));
 }
 
 function initHandler(switchName: string, gatewayFile?: string) {
