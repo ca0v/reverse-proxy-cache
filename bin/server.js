@@ -8,6 +8,21 @@ const db_1 = require("./server/db");
 const stringify_1 = require("./server/fun/stringify");
 const proxy_1 = require("./server/proxy");
 const http_1 = require("./server/http");
+function sort(o) {
+    if (null === o)
+        return o;
+    if (undefined === o)
+        return o;
+    if (typeof o !== "object")
+        return o;
+    if (Array.isArray(o)) {
+        return o.map((item) => sort(item));
+    }
+    const keys = Object.keys(o).sort();
+    const result = {};
+    keys.forEach((k) => (result[k] = sort(o[k])));
+    return result;
+}
 class Server {
     constructor(config) {
         this.server = null;
@@ -121,7 +136,10 @@ function addHandler(switchName, gatewayFile, externalUri, internalName) {
     base.about = base.about || internalName;
     if (!originalBase)
         pass.unshift(base);
-    fs.writeFileSync(gatewayFile, JSON.stringify(config, null, "  "));
+    pass.sort((a, b) => a.baseUri.localeCompare(b.baseUri));
+    pass.forEach((p) => (p.about = p.about || "this proxy is used to..."));
+    cache["proxy-pass"] = sort(cache["proxy-pass"]);
+    fs.writeFileSync(gatewayFile, JSON.stringify(config, null, 2));
 }
 function initHandler(switchName, gatewayFile) {
     if ("--init" !== switchName)
