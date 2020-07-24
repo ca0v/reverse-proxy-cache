@@ -7,18 +7,21 @@ class Proxy {
         // nothing to do
     }
     proxy(url) {
-        let proxyPass = this.config["proxy-pass"];
+        const proxyPass = this.config["proxy-pass"];
         if (!proxyPass) {
             throw "proxy-pass not found in configuration";
         }
-        let match = this.config["proxy-pass"].find(v => url.startsWith(v.baseUri));
+        // upsettingly non-performant but finds longest match
+        const matches = this.config["proxy-pass"].filter(v => url.startsWith(v.baseUri));
+        matches.sort((a, b) => a.baseUri.length - b.baseUri.length);
+        const match = matches.pop();
         if (!match) {
             return { url };
         }
-        let actualUrl = url.replace(match.baseUri, match.proxyUri);
+        const actualUrl = url.replace(match.baseUri, match.proxyUri);
         let cacheKey = actualUrl;
         if (match["cache-processor"]) {
-            let processors = match["cache-processor"].split(",").map(mid => {
+            const processors = match["cache-processor"].split(",").map(mid => {
                 let processor = require(`../cache-processor/${mid}`);
                 cacheKey = processor.computeCacheKey(cacheKey);
                 return processor;
