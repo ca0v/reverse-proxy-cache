@@ -33,6 +33,7 @@ interface IConfig {
     "proxy-pass": Array<{
       baseUri: string;
       proxyUri: string;
+      "cache-processor": string;
     }>
   }
 }
