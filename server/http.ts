@@ -77,20 +77,10 @@ export class Http {
                     body: string | Array<number>;
                 };
 
-                let resultHeaders = <OutgoingHttpHeaders>(
+                const resultHeaders = <OutgoingHttpHeaders>(
                     lowercase(result.headers)
                 );
 
-                if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach(
-                        (processor) =>
-                            (result.body = processor.processResponse(
-                                proxyInfo.url,
-                                result.body,
-                                {proxyInfo}
-                            ))
-                    );
-                }
                 resultHeaders["access-control-allow-credentials"] = "true";
                 resultHeaders["access-control-allow-origin"] =
                     origin || host || "*";
@@ -107,6 +97,18 @@ export class Http {
                     result.statusMessage,
                     resultHeaders
                 );
+
+                if (!!proxyInfo.processors) {
+                    proxyInfo.processors.forEach(
+                        (processor) =>
+                            (result.body = processor.processResponse(
+                                proxyInfo.url,
+                                result.body,
+                                { proxyInfo }
+                            ))
+                    );
+                }
+
                 res.write(asBody(result.body));
                 res.end();
                 return;
@@ -152,7 +154,20 @@ export class Http {
                 )}`
             );
             res.writeHead(result.statusCode || 200, outboundHeader);
-            res.write(asBody(result.body));
+
+            let processedBody = result.body;
+            if (!!proxyInfo.processors) {
+                proxyInfo.processors.forEach(
+                    (processor) =>
+                        (processedBody = processor.processResponse(
+                            proxyInfo.url,
+                            processedBody,
+                            { proxyInfo }
+                        ))
+                );
+            }
+
+            res.write(asBody(processedBody));
             res.end();
 
             if (proxyInfo["write-to-cache"]) {

@@ -42,10 +42,7 @@ class Http {
             let cachedata = await this.cache.exists(cacheKey);
             if (!!cachedata) {
                 let result = stringify_1.unstringify(cachedata);
-                let resultHeaders = (lowercase_1.lowercase(result.headers));
-                if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach((processor) => (result.body = processor.processResponse(proxyInfo.url, result.body, { proxyInfo })));
-                }
+                const resultHeaders = (lowercase_1.lowercase(result.headers));
                 resultHeaders["access-control-allow-credentials"] = "true";
                 resultHeaders["access-control-allow-origin"] =
                     origin || host || "*";
@@ -56,6 +53,9 @@ class Http {
                 stringify_1.verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
                 stringify_1.verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
                 res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
+                if (!!proxyInfo.processors) {
+                    proxyInfo.processors.forEach((processor) => (result.body = processor.processResponse(proxyInfo.url, result.body, { proxyInfo })));
+                }
                 res.write(asBody(result.body));
                 res.end();
                 return;
@@ -85,7 +85,11 @@ class Http {
             };
             stringify_1.verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
             res.writeHead(result.statusCode || 200, outboundHeader);
-            res.write(asBody(result.body));
+            let processedBody = result.body;
+            if (!!proxyInfo.processors) {
+                proxyInfo.processors.forEach((processor) => (processedBody = processor.processResponse(proxyInfo.url, processedBody, { proxyInfo })));
+            }
+            res.write(asBody(processedBody));
             res.end();
             if (proxyInfo["write-to-cache"]) {
                 this.cache.add(cacheKey, stringify_1.stringify({
