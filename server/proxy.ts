@@ -4,12 +4,17 @@ type Processor = typeof defaultProcessor;
 import { IConfig, ReverseProxyCache } from "./IConfig";
 
 
+export interface Dictionary<T> {
+    [index: string]: T;
+}
+
 export type ProxyInfo = {
     url: string;
     key?: string;
     processors?: Processor[];
     "write-to-cache"?: boolean;
     "read-from-cache"?: boolean;
+    "search-and-replace"?: Dictionary<string>;
 }
 
 export class Proxy {
@@ -21,6 +26,7 @@ export class Proxy {
         if (!proxyPass) {
             throw "proxy-pass not found in configuration";
         }
+        // upsettingly non-performant but finds longest match
         const matches = this.config["proxy-pass"].filter(v => url.startsWith(v.baseUri));
         matches.sort((a,b) => a.baseUri.length-b.baseUri.length);
         const match = matches.pop();

@@ -1,3 +1,5 @@
+import { ProxyInfo } from "@app/server/proxy";
+
 class Processor {
     regex = /[?&]callback=([^&]*)/;
     regexFn = /[^(]*\(/; // foo(
@@ -6,7 +8,7 @@ class Processor {
         return request.replace(this.regex, "");
     }
 
-    processResponse(request: string, response: string | Array<number>) {
+    processResponse(request: string, response: string | Array<number>, options: {proxyInfo: ProxyInfo}) {
         // only care about text response data
         if (typeof response !== "string") return response;
         // extract the callback name from the request

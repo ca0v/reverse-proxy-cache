@@ -86,7 +86,8 @@ export class Http {
                         (processor) =>
                             (result.body = processor.processResponse(
                                 proxyInfo.url,
-                                result.body
+                                result.body,
+                                {proxyInfo}
                             ))
                     );
                 }
