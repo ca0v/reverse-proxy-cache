@@ -44,7 +44,7 @@ class Http {
                 let result = stringify_1.unstringify(cachedata);
                 let resultHeaders = (lowercase_1.lowercase(result.headers));
                 if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach((processor) => (result.body = processor.processResponse(proxyInfo.url, result.body)));
+                    proxyInfo.processors.forEach((processor) => (result.body = processor.processResponse(proxyInfo.url, result.body, { proxyInfo })));
                 }
                 resultHeaders["access-control-allow-credentials"] = "true";
                 resultHeaders["access-control-allow-origin"] =

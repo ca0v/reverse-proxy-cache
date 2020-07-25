@@ -158,6 +158,15 @@
         "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
       },
       {
+        "about": "this proxy is used to update the export url with a proxy reference",
+        "baseUri": "/mock/proxy/ags/rest/services/IPS112/QA112AU/MapServer/export",
+        "cache-processor": "ignore-callback-querystring,search-and-replace",
+        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
+        "search-and-replace": {
+          "https://usalvwdgis1.infor.com:6443/arcgis": "http://localhost:3002//mock/proxy/ags"
+        }
+      },
+      {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/soap/rest/services/IPS112/SQL2v112/MapServer",
         "cache-processor": "ignore-callback-querystring",
