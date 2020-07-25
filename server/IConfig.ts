@@ -1,3 +1,5 @@
+import { Dictionary } from "./proxy";
+
 export interface ReverseProxyCache {
     port: string;
     verbose: boolean;
@@ -8,6 +10,7 @@ export interface ReverseProxyCache {
         proxyUri: string;
         "cache-processor"?: string;
         "no-cache"?: true | "readonly" | "writeonly";
+        "search-and-replace"?: Dictionary<string>;
     }>;
 }
 

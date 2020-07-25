@@ -11,6 +11,7 @@
     "test": "mocha ./bin/test/test.js -b",
     "debug:test": "npm run test -- --inspect-brk",
     "server": "node ./bin/cli.js",
+    "debug:server": "node --inspect ./bin/cli.js",
     "watch:test": "npm run test -- -w",
     "watch:build": "npm run build -- -w",
     "dev": "npm-run-all -p watch:build watch:test",
@@ -158,12 +159,12 @@
         "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
       },
       {
-        "about": "this proxy is used to update the export url with a proxy reference",
-        "baseUri": "/mock/proxy/ags/rest/services/IPS112/QA112AU/MapServer/export",
+        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+        "baseUri": "/mock/ags/rest/services/IPS112/QA112AU/MapServer/export",
         "cache-processor": "ignore-callback-querystring,search-and-replace",
         "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
         "search-and-replace": {
-          "https://usalvwdgis1.infor.com:6443/arcgis": "http://localhost:3002//mock/proxy/ags"
+          "https://usalvwdgis1.infor.com:6443/arcgis/rest/": "http://localhost:3002/mock/ags/rest/"
         }
       },
       {

@@ -36,6 +36,7 @@ class Proxy {
                 processors: processors,
                 "write-to-cache": true,
                 "read-from-cache": true,
+                "search-and-replace": match["search-and-replace"],
             };
         }
         return {
