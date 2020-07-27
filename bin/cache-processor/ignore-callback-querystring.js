@@ -7,7 +7,7 @@ class Processor {
     computeCacheKey(request) {
         return request.replace(this.regex, "");
     }
-    processResponse(request, response, options) {
+    processResponse(request, response) {
         // only care about text response data
         if (typeof response !== "string")
             return response;

@@ -1,6 +1,6 @@
-import { ProxyInfo } from "@app/server/contracts";
+import { ProxyInfo, IProcessor } from "@app/server/contracts";
 
-class Processor {
+class Processor implements IProcessor {
     regex = /[?&]callback=([^&]*)/;
     regexFn = /[^(]*\(/; // foo(
 
@@ -8,7 +8,7 @@ class Processor {
         return request.replace(this.regex, "");
     }
 
-    processResponse(request: string, response: string | Array<number>, options: {proxyInfo: ProxyInfo}) {
+    processResponse(request: string, response: string) {
         // only care about text response data
         if (typeof response !== "string") return response;
         // extract the callback name from the request

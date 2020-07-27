@@ -8,8 +8,8 @@ class Processor {
     processResponse(request, response, options) {
         if (typeof response !== "string")
             return response;
-        const replacements = options.proxyInfo["search-and-replace"] || {};
-        Object.keys(replacements).forEach(search => {
+        const replacements = options.proxyPass["search-and-replace"] || {};
+        Object.keys(replacements).forEach((search) => {
             response = response.replace(new RegExp(search, "g"), replacements[search]);
         });
         return response;
