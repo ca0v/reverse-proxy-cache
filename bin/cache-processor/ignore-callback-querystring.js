@@ -2,7 +2,7 @@
 class Processor {
     constructor() {
         this.regex = /[?&]callback=([^&]*)/;
-        this.regexFn = /[^(]*\(/; // foo(
+        this.regexFn = /[\w_][\w\d_]*\(/; // foo(
     }
     computeCacheKey(request) {
         return request.replace(this.regex, "");
