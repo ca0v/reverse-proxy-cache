@@ -4,7 +4,7 @@ url to the resulting image.
 https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export
  */
 
-import { ProxyInfo } from "@app/server/proxy";
+import { ProxyInfo } from "@app/server/contracts";
 
 class Processor {
     processResponse(request: string, response: string, options: {proxyInfo: ProxyInfo}) {

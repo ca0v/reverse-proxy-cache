@@ -1,6 +1,6 @@
 import * as sqlite3 from "sqlite3";
 import { verbose } from "./fun/stringify";
-import { IConfig, ReverseProxyCache } from "./IConfig";
+import { ReverseProxyCache } from "./contracts";
 
 export interface IDb {
     exists(url: string): Promise<string | null>;

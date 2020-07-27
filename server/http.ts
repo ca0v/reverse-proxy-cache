@@ -1,9 +1,9 @@
 import http, { OutgoingHttpHeaders } from "http";
 import { IDb } from "./db";
 import { stringify, unstringify, verbose } from "./fun/stringify";
-import { ProxyInfo } from "./proxy";
 import { lowercase } from "./fun/lowercase";
 import { HttpsGet } from "./fun/http-get";
+import { ProxyInfo } from "./contracts";
 
 let got = new HttpsGet();
 
@@ -67,7 +67,7 @@ export class Http {
         let origin = <string>requestHeaders.origin;
         let host = <string>requestHeaders.host;
 
-        if (proxyInfo["read-from-cache"]) {
+        if (proxyInfo.readFromCache) {
             let cachedata = await this.cache.exists(cacheKey);
             if (!!cachedata) {
                 let result = unstringify(cachedata) as {
@@ -99,14 +99,14 @@ export class Http {
                 );
 
                 if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach(
-                        (processor) =>
-                            (result.body = processor.processResponse(
-                                proxyInfo.url,
-                                result.body,
-                                { proxyInfo }
-                            ))
-                    );
+                    proxyInfo.processors.forEach((processor) => {
+                        if (!processor.processResponse) return;
+                        result.body = processor.processResponse(
+                            proxyInfo.url,
+                            result.body,
+                            { proxyPass: proxyInfo.proxyPass! }
+                        );
+                    });
                 }
 
                 res.write(asBody(result.body));
@@ -157,20 +157,20 @@ export class Http {
 
             let processedBody = result.body;
             if (!!proxyInfo.processors) {
-                proxyInfo.processors.forEach(
-                    (processor) =>
-                        (processedBody = processor.processResponse(
-                            proxyInfo.url,
-                            processedBody,
-                            { proxyInfo }
-                        ))
-                );
+                proxyInfo.processors.forEach((processor) => {
+                    if (!processor.processResponse) return;
+                    processedBody = processor.processResponse(
+                        proxyInfo.url,
+                        processedBody,
+                        { proxyPass: proxyInfo.proxyPass! }
+                    );
+                });
             }
 
             res.write(asBody(processedBody));
             res.end();
 
-            if (proxyInfo["write-to-cache"]) {
+            if (proxyInfo.writeToCache) {
                 this.cache.add(
                     cacheKey,
                     stringify({
@@ -219,7 +219,7 @@ export class Http {
                 .on("end", async () => {
                     verbose("invokePost.end");
                     try {
-                        if (url["read-from-cache"]) {
+                        if (url.readFromCache) {
                             let cachedata = await this.cache.exists(
                                 stringify(cacheKey)
                             );
@@ -266,7 +266,7 @@ export class Http {
                         res.write(value.body);
                         res.end();
 
-                        if (url["write-to-cache"]) {
+                        if (url.writeToCache) {
                             this.cache.add(
                                 stringify(cacheKey),
                                 stringify({

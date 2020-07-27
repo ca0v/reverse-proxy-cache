@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import { Db } from "../../server/db";
-import { ReverseProxyCache } from "../../server/IConfig";
+import { ReverseProxyCache } from "@app/server/contracts";
 
 describe("server/db", () => {
     it("test 'exists' method", async () => {

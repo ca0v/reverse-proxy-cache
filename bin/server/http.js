@@ -38,7 +38,7 @@ class Http {
         stringify_1.verbose(`inbound request headers: ${JSON.stringify(requestHeaders)}`);
         let origin = requestHeaders.origin;
         let host = requestHeaders.host;
-        if (proxyInfo["read-from-cache"]) {
+        if (proxyInfo.readFromCache) {
             let cachedata = await this.cache.exists(cacheKey);
             if (!!cachedata) {
                 let result = stringify_1.unstringify(cachedata);
@@ -54,7 +54,11 @@ class Http {
                 stringify_1.verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
                 res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
                 if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach((processor) => (result.body = processor.processResponse(proxyInfo.url, result.body, { proxyInfo })));
+                    proxyInfo.processors.forEach((processor) => {
+                        if (!processor.processResponse)
+                            return;
+                        result.body = processor.processResponse(proxyInfo.url, result.body, { proxyPass: proxyInfo.proxyPass });
+                    });
                 }
                 res.write(asBody(result.body));
                 res.end();
@@ -87,11 +91,15 @@ class Http {
             res.writeHead(result.statusCode || 200, outboundHeader);
             let processedBody = result.body;
             if (!!proxyInfo.processors) {
-                proxyInfo.processors.forEach((processor) => (processedBody = processor.processResponse(proxyInfo.url, processedBody, { proxyInfo })));
+                proxyInfo.processors.forEach((processor) => {
+                    if (!processor.processResponse)
+                        return;
+                    processedBody = processor.processResponse(proxyInfo.url, processedBody, { proxyPass: proxyInfo.proxyPass });
+                });
             }
             res.write(asBody(processedBody));
             res.end();
-            if (proxyInfo["write-to-cache"]) {
+            if (proxyInfo.writeToCache) {
                 this.cache.add(cacheKey, stringify_1.stringify({
                     statusCode: result.statusCode,
                     statusMessage: result.statusMessage,
@@ -133,7 +141,7 @@ class Http {
                 .on("end", async () => {
                 stringify_1.verbose("invokePost.end");
                 try {
-                    if (url["read-from-cache"]) {
+                    if (url.readFromCache) {
                         let cachedata = await this.cache.exists(stringify_1.stringify(cacheKey));
                         // found in cache, response with cached data
                         if (!!cachedata) {
@@ -161,7 +169,7 @@ class Http {
                     res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);
                     res.write(value.body);
                     res.end();
-                    if (url["write-to-cache"]) {
+                    if (url.writeToCache) {
                         this.cache.add(stringify_1.stringify(cacheKey), stringify_1.stringify({
                             statusCode: value.statusCode,
                             statusMessage: value.statusMessage,

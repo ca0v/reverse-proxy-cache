@@ -1,7 +1,7 @@
 import { HttpsGet } from "../server/fun/http-get";
 import * as assert from "assert";
 import { run, Server as ProxyServer } from "../server";
-import { IConfig } from "../server/IConfig";
+import { IConfig } from "@app/server/contracts";
 
 const got = new HttpsGet();
 const proxyPort = 3004;

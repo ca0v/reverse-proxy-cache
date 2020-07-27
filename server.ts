@@ -5,7 +5,7 @@ import { Db } from "./server/db";
 import {
     IConfig,
     ReverseProxyCache as ReverseProxyCacheConfig,
-} from "./server/IConfig";
+} from "./server/contracts";
 import { verbose as dump } from "./server/fun/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";

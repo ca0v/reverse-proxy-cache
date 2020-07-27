@@ -4,7 +4,7 @@ import * as https from "https";
 import * as querystring from "querystring";
 import { HttpsGet } from "../../server/fun/http-get";
 import { run, Server as ProxyServer } from "../../server";
-import { IConfig } from "../../server/IConfig";
+import { IConfig } from "@app/server/contracts";
 
 describe("agol raw post", () => {
     it("access https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer via hosted server (POST)", async () => {

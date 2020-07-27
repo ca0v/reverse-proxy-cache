@@ -2,9 +2,9 @@ import * as assert from "assert";
 import { run, Server as ProxyServer } from "../server";
 
 import { EchoServer } from "./echo-server";
-import { IConfig } from "../server/IConfig";
 import { verbose } from "../server/fun/stringify";
 import { HttpsGet } from "../server/fun/http-get";
+import { IConfig } from "@app/server/contracts";
 
 const echoPort = 3003; // + Math.round(200 * Math.random());
 const proxyPort = echoPort + 1;

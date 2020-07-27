@@ -1,20 +1,9 @@
-import * as defaultProcessor from "../cache-processor/ignore-callback-querystring";
-type Processor = typeof defaultProcessor;
-
-import { IConfig, ReverseProxyCache } from "./IConfig";
-
-export interface Dictionary<T> {
-    [index: string]: T;
-}
-
-export type ProxyInfo = {
-    url: string;
-    key?: string;
-    processors?: Processor[];
-    "write-to-cache"?: boolean;
-    "read-from-cache"?: boolean;
-    "search-and-replace"?: Dictionary<string>;
-};
+import {
+    ReverseProxyCache,
+    ProxyInfo,
+    IProcessor,
+    ProxyPass,
+} from "./contracts";
 
 export class Proxy {
     constructor(private config: ReverseProxyCache) {
@@ -30,7 +19,7 @@ export class Proxy {
             url.startsWith(v.baseUri)
         );
         matches.sort((a, b) => a.baseUri.length - b.baseUri.length);
-        const match = matches.pop();
+        const match = <ProxyPass>matches.pop();
         if (!match) {
             return { url };
         }
@@ -41,9 +30,11 @@ export class Proxy {
             const processors = match["cache-processor"]
                 .split(",")
                 .map((mid) => {
-                    let processor: Processor = require(`../cache-processor/${mid}`);
+                    let processor: IProcessor = require(`../cache-processor/${mid}`);
                     if (processor.computeCacheKey) {
-                        cacheKey = processor.computeCacheKey(cacheKey);
+                        cacheKey = processor.computeCacheKey(cacheKey, {
+                            proxyPass: match,
+                        });
                     }
                     return processor;
                 });
@@ -51,19 +42,20 @@ export class Proxy {
                 url: actualUrl,
                 key: cacheKey,
                 processors: processors,
-                "write-to-cache": true,
-                "read-from-cache": true,
-                "search-and-replace": match["search-and-replace"],
+                writeToCache: true,
+                readFromCache: true,
+                proxyPass: match,
             };
         }
 
         return {
             url: actualUrl,
             key: cacheKey,
-            "write-to-cache":
+            writeToCache:
                 !match["no-cache"] || "writeonly" === match["no-cache"],
-            "read-from-cache":
+            readFromCache:
                 !match["no-cache"] || "readonly" === match["no-cache"],
+            proxyPass: match,
         };
     }
 }

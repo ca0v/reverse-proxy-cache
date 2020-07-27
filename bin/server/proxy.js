@@ -26,7 +26,9 @@ class Proxy {
                 .map((mid) => {
                 let processor = require(`../cache-processor/${mid}`);
                 if (processor.computeCacheKey) {
-                    cacheKey = processor.computeCacheKey(cacheKey);
+                    cacheKey = processor.computeCacheKey(cacheKey, {
+                        proxyPass: match,
+                    });
                 }
                 return processor;
             });
@@ -34,16 +36,17 @@ class Proxy {
                 url: actualUrl,
                 key: cacheKey,
                 processors: processors,
-                "write-to-cache": true,
-                "read-from-cache": true,
-                "search-and-replace": match["search-and-replace"],
+                writeToCache: true,
+                readFromCache: true,
+                proxyPass: match,
             };
         }
         return {
             url: actualUrl,
             key: cacheKey,
-            "write-to-cache": !match["no-cache"] || "writeonly" === match["no-cache"],
-            "read-from-cache": !match["no-cache"] || "readonly" === match["no-cache"],
+            writeToCache: !match["no-cache"] || "writeonly" === match["no-cache"],
+            readFromCache: !match["no-cache"] || "readonly" === match["no-cache"],
+            proxyPass: match,
         };
     }
 }

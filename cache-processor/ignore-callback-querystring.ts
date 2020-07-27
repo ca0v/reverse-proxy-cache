@@ -1,4 +1,4 @@
-import { ProxyInfo } from "@app/server/proxy";
+import { ProxyInfo } from "@app/server/contracts";
 
 class Processor {
     regex = /[?&]callback=([^&]*)/;
