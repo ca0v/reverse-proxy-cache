@@ -61,6 +61,15 @@
         "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
       },
       {
+        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+        "baseUri": "/mock/ags/rest/services/IPS112/QA112AU/MapServer/export",
+        "cache-processor": "ignore-callback-querystring,search-and-replace",
+        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
+        "search-and-replace": {
+          "https://usalvwdgis1.infor.com:6443/arcgis/rest/": "http://localhost:3002/mock/ags/rest/"
+        }
+      },
+      {
         "about": "this proxy is used to...",
         "baseUri": "/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer",
         "proxyUri": "https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer"
@@ -113,6 +122,24 @@
       },
       {
         "about": "this proxy is used to...",
+        "baseUri": "/mock/mapcache",
+        "cache-processor": "search-and-replace",
+        "proxyUri": "http://localhost:8888/mapcache",
+        "search-and-replace": {
+          "localhost:8888/": "localhost:3002/mock/"
+        }
+      },      
+      {
+        "about": "this proxy is used to...",
+        "baseUri": "/mock/geoserver",
+        "cache-processor": "search-and-replace",
+        "proxyUri": "http://usalvwdgis1:8080/geoserver",
+        "search-and-replace": {
+          "http://usalvwdgis1:8080/geoserver": "http://localhost:3002/mock/geoserver"
+        }
+      },
+      {
+        "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/agol/ArcGIS/rest/services/World_Street_Map/MapServer",
         "cache-processor": "ignore-callback-querystring",
         "proxyUri": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"
@@ -157,15 +184,6 @@
         "baseUri": "/mock/proxy/ags/rest/services/annotations/FeatureServer",
         "cache-processor": "ignore-callback-querystring",
         "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
-      },
-      {
-        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
-        "baseUri": "/mock/ags/rest/services/IPS112/QA112AU/MapServer/export",
-        "cache-processor": "ignore-callback-querystring,search-and-replace",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
-        "search-and-replace": {
-          "https://usalvwdgis1.infor.com:6443/arcgis/rest/": "http://localhost:3002/mock/ags/rest/"
-        }
       },
       {
         "about": "this proxy is used to...",

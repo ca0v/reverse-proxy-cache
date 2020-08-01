@@ -98,17 +98,7 @@ export class Http {
                     resultHeaders
                 );
 
-                if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach((processor) => {
-                        if (!processor.processResponse) return;
-                        result.body = processor.processResponse(
-                            proxyInfo.url,
-                            result.body,
-                            { proxyPass: proxyInfo.proxyPass! }
-                        );
-                    });
-                }
-
+                result.body = this.runProcessors(proxyInfo, result.body);
                 res.write(asBody(result.body));
                 res.end();
                 return;
@@ -155,18 +145,7 @@ export class Http {
             );
             res.writeHead(result.statusCode || 200, outboundHeader);
 
-            let processedBody = result.body;
-            if (!!proxyInfo.processors) {
-                proxyInfo.processors.forEach((processor) => {
-                    if (!processor.processResponse) return;
-                    processedBody = processor.processResponse(
-                        proxyInfo.url,
-                        processedBody,
-                        { proxyPass: proxyInfo.proxyPass! }
-                    );
-                });
-            }
-
+            let processedBody = this.runProcessors(proxyInfo, result.body);
             res.write(asBody(processedBody));
             res.end();
 
@@ -186,6 +165,22 @@ export class Http {
             this.failure(ex, res);
         }
     }
+
+    private runProcessors(proxyInfo: ProxyInfo, finalBody: string | number[]) {
+        if (!!proxyInfo.processors) {
+            proxyInfo.processors.forEach((processor) => {
+                if (!processor.processResponse)
+                    return;
+                finalBody = processor.processResponse(
+                    proxyInfo.url,
+                    finalBody,
+                    { proxyPass: proxyInfo.proxyPass! }
+                );
+            });
+        }
+        return finalBody;
+    }
+
     private failure(ex: any, res: http.ServerResponse) {
         res.writeHead(500, {
             "content-type": "text/plain",
@@ -236,6 +231,8 @@ export class Http {
                                     value.statusMessage,
                                     value.headers
                                 );
+
+                                value.body = this.runProcessors(url, value.body) as string;
                                 res.write(value.body);
                                 res.end();
                                 good(value.body);
@@ -263,6 +260,8 @@ export class Http {
                             value.statusMessage,
                             valueHeaders
                         );
+
+                        value.body = this.runProcessors(url, value.body) as string;
                         res.write(value.body);
                         res.end();
 

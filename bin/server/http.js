@@ -53,13 +53,7 @@ class Http {
                 stringify_1.verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
                 stringify_1.verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
                 res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
-                if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach((processor) => {
-                        if (!processor.processResponse)
-                            return;
-                        result.body = processor.processResponse(proxyInfo.url, result.body, { proxyPass: proxyInfo.proxyPass });
-                    });
-                }
+                result.body = this.runProcessors(proxyInfo, result.body);
                 res.write(asBody(result.body));
                 res.end();
                 return;
@@ -89,14 +83,7 @@ class Http {
             };
             stringify_1.verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
             res.writeHead(result.statusCode || 200, outboundHeader);
-            let processedBody = result.body;
-            if (!!proxyInfo.processors) {
-                proxyInfo.processors.forEach((processor) => {
-                    if (!processor.processResponse)
-                        return;
-                    processedBody = processor.processResponse(proxyInfo.url, processedBody, { proxyPass: proxyInfo.proxyPass });
-                });
-            }
+            let processedBody = this.runProcessors(proxyInfo, result.body);
             res.write(asBody(processedBody));
             res.end();
             if (proxyInfo.writeToCache) {
@@ -112,6 +99,16 @@ class Http {
             console.error("failure to invoke", ex);
             this.failure(ex, res);
         }
+    }
+    runProcessors(proxyInfo, finalBody) {
+        if (!!proxyInfo.processors) {
+            proxyInfo.processors.forEach((processor) => {
+                if (!processor.processResponse)
+                    return;
+                finalBody = processor.processResponse(proxyInfo.url, finalBody, { proxyPass: proxyInfo.proxyPass });
+            });
+        }
+        return finalBody;
     }
     failure(ex, res) {
         res.writeHead(500, {
@@ -147,6 +144,7 @@ class Http {
                         if (!!cachedata) {
                             let value = stringify_1.unstringify(cachedata);
                             res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
+                            value.body = this.runProcessors(url, value.body);
                             res.write(value.body);
                             res.end();
                             good(value.body);
@@ -167,6 +165,7 @@ class Http {
                     });
                     let valueHeaders = lowercase_1.lowercase(value.headers);
                     res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);
+                    value.body = this.runProcessors(url, value.body);
                     res.write(value.body);
                     res.end();
                     if (url.writeToCache) {
