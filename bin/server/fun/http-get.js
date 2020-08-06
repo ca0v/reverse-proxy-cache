@@ -22,12 +22,17 @@ class HttpsGet {
                 stringify_1.verbose({ mimeType, isBinary });
                 let data = [];
                 stringify_1.verbose("https response statusCode: ", res.statusCode);
-                let complete = () => good({
-                    body: isBinary ? data : bufferToString_1.bufferToString(data),
-                    headers: res.headers,
-                    statusCode: res.statusCode || 0,
-                    statusMessage: res.statusMessage || "",
-                });
+                let complete = () => {
+                    let body = data;
+                    if (!isBinary)
+                        body = bufferToString_1.bufferToString(data);
+                    good({
+                        body: body,
+                        headers: res.headers,
+                        statusCode: res.statusCode || 0,
+                        statusMessage: res.statusMessage || "",
+                    });
+                };
                 res.on("close", () => {
                     // close
                     stringify_1.verbose(`res.close size:${data.length}`);

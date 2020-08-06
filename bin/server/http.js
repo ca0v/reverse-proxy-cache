@@ -80,6 +80,7 @@ class Http {
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
                 "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*",
+                "content-type": resultHeaders["content-type"] || "reverse-proxy/unknown",
             };
             stringify_1.verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
             res.writeHead(result.statusCode || 200, outboundHeader);
