@@ -29,13 +29,17 @@ export class HttpsGet {
                     let data: Array<number> = [];
                     verbose("https response statusCode: ", res.statusCode);
 
-                    let complete = () =>
+                    let complete = () => {
+                        let body: string | number[] = data;
+                        if (!isBinary) body = bufferToString(data);
+
                         good({
-                            body: isBinary ? data : bufferToString(data),
+                            body: body,
                             headers: res.headers,
                             statusCode: res.statusCode || 0,
                             statusMessage: res.statusMessage || "",
                         });
+                    };
 
                     res.on("close", () => {
                         // close
