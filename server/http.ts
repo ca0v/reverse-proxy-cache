@@ -128,12 +128,14 @@ export class Http {
                 `inbound response headers: ${JSON.stringify(resultHeaders)}`
             );
 
-            let outboundHeader = {
+            let outboundHeader: http.IncomingHttpHeaders = {
                 "access-control-allow-credentials": "true",
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
                 "access-control-allow-headers":
                     resultHeaders["access-control-allow-headers"] || "*",
+                "content-type":
+                    resultHeaders["content-type"] || "reverse-proxy/unknown",
             };
 
             verbose(
@@ -169,8 +171,7 @@ export class Http {
     private runProcessors(proxyInfo: ProxyInfo, finalBody: string | number[]) {
         if (!!proxyInfo.processors) {
             proxyInfo.processors.forEach((processor) => {
-                if (!processor.processResponse)
-                    return;
+                if (!processor.processResponse) return;
                 finalBody = processor.processResponse(
                     proxyInfo.url,
                     finalBody,
@@ -232,7 +233,10 @@ export class Http {
                                     value.headers
                                 );
 
-                                value.body = this.runProcessors(url, value.body) as string;
+                                value.body = this.runProcessors(
+                                    url,
+                                    value.body
+                                ) as string;
                                 res.write(value.body);
                                 res.end();
                                 good(value.body);
@@ -261,7 +265,10 @@ export class Http {
                             valueHeaders
                         );
 
-                        value.body = this.runProcessors(url, value.body) as string;
+                        value.body = this.runProcessors(
+                            url,
+                            value.body
+                        ) as string;
                         res.write(value.body);
                         res.end();
 
