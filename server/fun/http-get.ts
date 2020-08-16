@@ -14,22 +14,23 @@ export class HttpsGet {
         if (!requestOptions.method) requestOptions.method = "GET";
         let protocol = url.startsWith("https://") ? https : http;
 
-        let p = new Promise<{
+        const p = new Promise<{
             body: string | Array<number>;
             statusCode: number;
             statusMessage: string;
             headers: IHttp.IncomingHttpHeaders;
         }>((good, bad) => {
-            let req = protocol
+            const req = protocol
                 .request(urlOptions, requestOptions, (res) => {
-                    let mimeType = res.headers["content-type"] || "text/plain";
-                    let isBinary = isBinaryMimeType(mimeType);
+                    const mimeType =
+                        res.headers["content-type"] || "text/plain";
+                    const isBinary = isBinaryMimeType(mimeType);
                     verbose({ mimeType, isBinary });
 
-                    let data: Array<number> = [];
+                    const data: Array<number> = [];
                     verbose("https response statusCode: ", res.statusCode);
 
-                    let complete = () => {
+                    const complete = () => {
                         let body: string | number[] = data;
                         if (!isBinary) body = bufferToString(data);
 
