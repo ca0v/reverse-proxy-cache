@@ -1,44 +1,4 @@
 {
-    "name": "reverse-proxy-cache",
-    "version": "1.0.0",
-    "description": "gateway with caching to faciliate testing",
-    "main": "./bin/server.js",
-    "bin": {
-        "reverse-proxy-cache": "./bin/cli.js"
-    },
-    "scripts": {
-        "lint": "eslint ./built",
-        "test": "mocha ./bin/test/test.js -b",
-        "debug:test": "npm run test -- --inspect-brk",
-        "server": "node ./bin/cli.js reverse-proxy-config.json",
-        "debug:server": "node --inspect ./bin/cli.js",
-        "watch:test": "npm run test -- -w",
-        "watch:build": "npm run build -- -w",
-        "dev": "npm-run-all -p watch:build watch:test",
-        "build": "tsc",
-        "format": "npm run server -- --init"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "dotenv": "^8.0.0",
-        "got": "^9.6.0",
-        "npm-run-all": "^4.1.5",
-        "sqlite": "^4.0.14",
-        "sqlite3": "^5.0.0"
-    },
-    "devDependencies": {
-        "@types/got": "^9.4.4",
-        "@types/http-proxy": "^1.17.0",
-        "@types/mocha": "^5.2.7",
-        "@types/sqlite3": "^3.1.5",
-        "@typescript-eslint/parser": "^2.3.2",
-        "eslint": "^6.5.1",
-        "eslint-plugin-promise": "^4.2.1",
-        "mocha": "^6.2.0",
-        "typescript": "^3.7.2"
-    },
     "reverse-proxy-cache": {
         "port": "3002",
         "reverse-proxy-db": "ipsunittests.sqlite",
@@ -56,6 +16,21 @@
                 "proxyUri": "https://matterhornvs.co.pierce.wa.us/spatialservices/rest/services/Sewer/IPSBilling/MapServer"
             },
             {
+                "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+                "baseUri": "/mock/ags",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
+            },
+            {
+                "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+                "baseUri": "/mock/ags/rest/services/IPS112/QA112AU/MapServer/export",
+                "cache-processor": "ignore-callback-querystring,search-and-replace",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
+                "search-and-replace": {
+                    "https://usalvwdgis1.infor.com:6443/arcgis/rest/": "http://localhost:3002/mock/ags/rest/"
+                }
+            },
+            {
                 "about": "this proxy is used to...",
                 "baseUri": "/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer",
                 "proxyUri": "https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer"
@@ -64,6 +39,22 @@
                 "about": "this proxy is used to...",
                 "baseUri": "/mock/geoserver",
                 "proxyUri": "http://localhost:8080/geoserver"
+            },
+            {
+                "about": "proxy ips to mock service responses for routing",
+                "baseUri": "/mock/ips/11.2/api",
+                "proxyUri": "http://usgvncalix01.infor.com/IPS112/api"
+            },
+            {
+                "about": "do not cache api/auth requests",
+                "baseUri": "/mock/ips/11.2/api/auth",
+                "no-cache": true,
+                "proxyUri": "http://usgvncalix01.infor.com/IPS112/api/auth"
+            },
+            {
+                "about": "proxy ips to mock service responses for routing",
+                "baseUri": "/mock/ips/11.2/nextgen",
+                "proxyUri": "https://usgvncalix01.infor.com/IPS112"
             },
             {
                 "about": "requests intercept dojo",
@@ -97,6 +88,15 @@
                 "proxyUri": "http://localhost:8888/mapcache",
                 "search-and-replace": {
                     "localhost:8888/": "localhost:3002/mock/"
+                }
+            },
+            {
+                "about": "this proxy is used to...",
+                "baseUri": "/mock/geoserver",
+                "cache-processor": "search-and-replace",
+                "proxyUri": "http://usalvwdgis1:8080/geoserver",
+                "search-and-replace": {
+                    "http://usalvwdgis1:8080/geoserver": "http://localhost:3002/mock/geoserver"
                 }
             },
             {
@@ -136,6 +136,12 @@
             },
             {
                 "about": "this proxy is used to...",
+                "baseUri": "/mock/proxy/ags/rest/services/annotations/",
+                "cache-processor": "ignore-callback-querystring",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
+            },
+            {
+                "about": "this proxy is used to...",
                 "baseUri": "/mock/proxy/ags/rest/services/annotations/FeatureServer",
                 "cache-processor": "ignore-callback-querystring",
                 "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
@@ -147,9 +153,19 @@
                 "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
             },
             {
+                "about": "this proxy is used to...",
+                "baseUri": "/mock/proxy/ags/soap/services/",
+                "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/services/"
+            },
+            {
                 "about": "tests token generation for OAUTH2",
                 "baseUri": "/mock/proxy/arcgis",
                 "proxyUri": "https://www.arcgis.com"
+            },
+            {
+                "about": "this proxy is used to...",
+                "baseUri": "/mock/test/MapIcons/",
+                "proxyUri": "https://usgvncalix01.infor.com/IPS112/client/images/MapDrawer/MapIcons/"
             },
             {
                 "about": "agol/ArcGIS/rest/services/World_Street_Map/MapServer",
