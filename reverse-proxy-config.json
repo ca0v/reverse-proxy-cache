@@ -176,6 +176,10 @@
                 "about": "arcgis",
                 "baseUri": "/proxy/arcgis",
                 "proxyUri": "https://www.arcgis.com"
+            },
+            {
+                "proxyUri": "https://sampleserver3.arcgisonline.com/ArcGIS/rest/services/",
+                "baseUri": "/mock/sampleserver3/arcgis/rest/services/"
             }
         ]
     }
