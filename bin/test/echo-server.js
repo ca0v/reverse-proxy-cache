@@ -11,15 +11,14 @@ class EchoServer {
     start() {
         if (!this.server) {
             this.server = http.createServer(async (req, res) => {
+                res.setHeader("content-type", "echo/text");
                 let ended = false;
                 res.write("echo(");
-                req
-                    .on("end", () => {
+                req.on("end", () => {
                     ended = true;
                     res.write(")");
                     res.end();
-                })
-                    .on("data", data => {
+                }).on("data", (data) => {
                     if (ended)
                         throw "CANNOT WRITE ANY MORE DATA";
                     res.write(data);

@@ -14,15 +14,15 @@ class HttpsGet {
         if (!requestOptions.method)
             requestOptions.method = "GET";
         let protocol = url.startsWith("https://") ? https : http;
-        let p = new Promise((good, bad) => {
-            let req = protocol
+        const p = new Promise((good, bad) => {
+            const req = protocol
                 .request(urlOptions, requestOptions, (res) => {
-                let mimeType = res.headers["content-type"] || "text/plain";
-                let isBinary = isBinaryMimeType_1.isBinaryMimeType(mimeType);
+                const mimeType = res.headers["content-type"] || "text/plain";
+                const isBinary = isBinaryMimeType_1.isBinaryMimeType(mimeType);
                 stringify_1.verbose({ mimeType, isBinary });
-                let data = [];
+                const data = [];
                 stringify_1.verbose("https response statusCode: ", res.statusCode);
-                let complete = () => {
+                const complete = () => {
                     let body = data;
                     if (!isBinary)
                         body = bufferToString_1.bufferToString(data);
