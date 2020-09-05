@@ -66,4 +66,18 @@ export class Db implements IDb {
         });
         return p;
     }
+
+    delete(statusCode: string) {
+        verbose("db.delete status code", statusCode);
+        let cmd = this.db.prepare(
+            `DELETE FROM cache WHERE res LIKE '%"statusCode": ${statusCode}%'`
+        );
+        let p = new Promise((resolve, reject) => {
+            cmd.run((err: string) => {
+                cmd.finalize();
+                err ? reject(err) : resolve(err);
+            });
+        });
+        return p;
+    }
 }

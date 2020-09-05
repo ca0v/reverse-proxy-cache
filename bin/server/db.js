@@ -47,6 +47,17 @@ class Db {
         });
         return p;
     }
+    delete(statusCode) {
+        stringify_1.verbose("db.delete status code", statusCode);
+        let cmd = this.db.prepare(`DELETE FROM cache WHERE res LIKE '%"statusCode": ${statusCode}%'`);
+        let p = new Promise((resolve, reject) => {
+            cmd.run((err) => {
+                cmd.finalize();
+                err ? reject(err) : resolve(err);
+            });
+        });
+        return p;
+    }
 }
 exports.Db = Db;
 //# sourceMappingURL=db.js.map

@@ -8,6 +8,7 @@ const db_1 = require("./server/db");
 const stringify_1 = require("./server/fun/stringify");
 const proxy_1 = require("./server/proxy");
 const http_1 = require("./server/http");
+const url = require("url");
 function sort(o) {
     if (null === o)
         return o;
@@ -51,6 +52,8 @@ class Server {
         let proxy = new proxy_1.Proxy(config);
         let helper = new http_1.Http(cache);
         this.server = http.createServer(async (req, res) => {
+            if (this.allowIntercepts(req, res))
+                return;
             let url = req.url || "";
             let proxyurl = proxy.proxy(url);
             if (proxyurl.url === url) {
@@ -98,6 +101,30 @@ class Server {
         this.verbose(`listening on ${port}`);
         return this;
     }
+    allowIntercepts(req, res) {
+        const urlStr = req.url || "";
+        const { query, pathname } = url.parse(urlStr, true);
+        console.log("here", pathname, query, req.method);
+        if (req.method !== "GET")
+            return false;
+        if (pathname !== "/system")
+            return false;
+        if (query.delete) {
+            this.cache.delete(query.delete)
+                .catch((err) => {
+                console.log(err);
+                res.write(JSON.stringify(err));
+                res.end();
+            })
+                .then(() => {
+                console.log("ok");
+                res.write(`deleting where status code is ${query.delete}`);
+                res.end();
+            });
+            return true;
+        }
+        return false;
+    }
     stop() {
         if (this.server)
             this.server.close();
@@ -141,6 +168,12 @@ function addHandler(switchName, gatewayFile, externalUri, internalName) {
     cache["proxy-pass"] = sort(cache["proxy-pass"]);
     fs.writeFileSync(gatewayFile, JSON.stringify(config, null, 2));
 }
+function deleteHandler(switchName, gatewayFile, fromCacheWhereResLike) {
+    if ("--delete" !== switchName)
+        throw "invalid switch";
+    if (!gatewayFile)
+        throw `you must specify a target package.json files as the 1st argument`;
+}
 function initHandler(switchName, gatewayFile) {
     if ("--init" !== switchName)
         throw "invalid switch";
@@ -151,6 +184,7 @@ function initHandler(switchName, gatewayFile) {
 const handlers = {
     init: initHandler,
     add: addHandler,
+    delete: deleteHandler,
 };
 async function run(args) {
     if (Array.isArray(args)) {

@@ -1,7 +1,7 @@
 {
     "reverse-proxy-cache": {
         "port": "3002",
-        "reverse-proxy-db": "ipsunittests.sqlite",
+        "reverse-proxy-db": "ca0v.sqlite",
         "verbose": true,
         "proxy-pass": [
             {
