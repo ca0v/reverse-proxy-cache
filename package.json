@@ -2,7 +2,7 @@
     "name": "reverse-proxy-cache",
     "version": "1.0.0",
     "description": "gateway with caching to faciliate testing",
-    "main": "./bin/server.js",
+    "main": "./bin/cli.js",
     "bin": {
         "reverse-proxy-cache": "./bin/cli.js"
     },
