@@ -1,3 +1,4 @@
+import "./args-test";
 import "./server/systemops";
 import "./server/ags-pbf";
 import "./thirdparty";
