@@ -43,10 +43,42 @@ interface IConfig {
 
 - v1.0.6 - additional caching strategies, see https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/
 - v1.0.5 - organize code using patterns from popular node projects
+  - adds ability to write a mock
 - v1.0.4 - adds system service for deleting by statuscode (e.g. /system/delete=302)
 - v1.0.2 - adds --init and --add commands
 - v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
 - v1.0.0 - supports GET only
+
+## Documentation
+
+### Inject mock data (v1.0.5)
+
+```
+const response1 = await got.post(
+  `http://localhost:3001/system?mock=add`,
+  {
+    body: querystring.stringify({
+      method: "GET",
+      url: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md",
+      data: "this data was injected as a mock",
+    }),
+  }
+);
+```
+
+Request mocked data
+
+```
+const response2 = await got.get(
+  `http://localhost:3001/mock/test/MapIcons/README.md`
+);
+```
+
+### Delete 504 errors (v1.0.4)
+
+```
+got.get(`http://localhost:3001/system?delete=504`);
+```
 
 ## Issues
 

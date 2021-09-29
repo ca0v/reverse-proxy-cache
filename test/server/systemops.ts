@@ -2,6 +2,8 @@ import type { IConfig } from "../../server/contracts";
 import { run, Server as ProxyServer } from "../../server";
 import * as assert from "assert";
 import { HttpsGet } from "../../server/fun/http-get";
+import { verbose } from "../../server/fun/stringify";
+import * as querystring from "querystring";
 
 describe("hits the /system endpoint", () => {
   const got = new HttpsGet();
@@ -12,7 +14,14 @@ describe("hits the /system endpoint", () => {
       verbose: true,
       port: `${proxyPort}`,
       "reverse-proxy-db": "ca0v.sqlite",
-      "proxy-pass": [],
+      "proxy-pass": [
+        {
+          baseUri: "/mock/test/MapIcons/",
+          proxyUri:
+            "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/",
+          about: "used to test image caching",
+        },
+      ],
     },
   };
   let proxy: ProxyServer | void;
@@ -29,9 +38,42 @@ describe("hits the /system endpoint", () => {
   });
 
   it("deletes all 504 entries", async () => {
-    const cacheUrl = `http://localhost:3004/system?delete=504`;
+    const cacheUrl = `http://localhost:${proxyPort}/system?delete=504`;
     const response1 = await got.get(cacheUrl);
     assert.strictEqual(response1.statusCode, 200);
     assert.strictEqual(response1.body, "deleting where status code is 504");
+  });
+
+  it("creates a mock entry", async () => {
+    const cacheUrl = `http://localhost:${proxyPort}/system?mock=add`;
+    const endpointToMock =
+      "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md";
+    const mockData = "this data was written from a unit test";
+
+    const data = querystring.stringify({
+      method: "GET",
+      url: endpointToMock,
+      data: mockData,
+    });
+    const response1 = await got.post(cacheUrl, {
+      body: data,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": data.length,
+      },
+    });
+
+    assert.strictEqual(
+      response1.statusCode,
+      200,
+      "mock request was successful"
+    );
+
+    const response2 = await got.get(
+      `http://localhost:${proxyPort}/mock/test/MapIcons/README.md`
+    );
+
+    verbose("RESPONSE BODY", response2.body);
+    assert.strictEqual(response2.body, mockData, "the mock data was written");
   });
 });

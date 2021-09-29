@@ -10,6 +10,8 @@ import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
 import * as url from "url";
 import { parseArgs } from "./parseArgs";
+import { DeleteSystemPlugin } from "./DeleteSystemPlugin";
+import { AddMockResponseSystemPlugin } from "./AddMockResponseSystemPlugin";
 
 function sort(o: any): any {
   if (null === o) return o;
@@ -26,8 +28,12 @@ function sort(o: any): any {
 
 export class Server {
   private server: http.Server | null = null;
-  private cache: Db | null = null;
+  public cache: Db | null = null;
   private config: ReverseProxyCacheConfig;
+  private systemPlugins = [
+    new DeleteSystemPlugin(this),
+    new AddMockResponseSystemPlugin(this),
+  ];
 
   constructor(config: IConfig) {
     if (!config["reverse-proxy-cache"])
@@ -55,6 +61,7 @@ export class Server {
     let proxy = new Proxy(config);
     let helper = new Http(cache);
     this.server = http.createServer(async (req, res) => {
+      // let the plugins have a chance
       if (this.allowIntercepts(req, res)) return;
       let url = req.url || "";
       let proxyurl = proxy.proxy(url);
@@ -90,10 +97,13 @@ export class Server {
             break;
         }
       } catch (ex) {
-        this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
+        this.verbose(
+          `${req.method} request failed for ${proxyurl}:\n`,
+          ex + ""
+        );
         res.writeHead(500, `${(ex + "").substring(0, 16)}`, {
           "content-type": "text/plain",
-          body: ex,
+          body: ex + "",
         });
         res.end();
         return;
@@ -106,26 +116,13 @@ export class Server {
   }
 
   allowIntercepts(req: http.IncomingMessage, res: http.ServerResponse) {
-    const urlStr = req.url || "";
-    const { query, pathname } = url.parse(urlStr, true);
-    console.log("here", pathname, query, req.method);
-    if (req.method !== "GET") return false;
+    const { pathname } = url.parse(req.url || "", true);
+    this.verbose("allowIntercepts", req.url || "", pathname || "");
     if (pathname !== "/system") return false;
-    if (query.delete) {
-      this.cache!.delete(<string>query.delete)
-        .catch((err) => {
-          console.log(err);
-          res.write(JSON.stringify(err));
-          res.end();
-        })
-        .then(() => {
-          console.log("ok");
-          res.write(`deleting where status code is ${query.delete}`);
-          res.end();
-        });
-      return true;
-    }
-    return false;
+    const pluginFound =
+      this.systemPlugins?.some((p) => p.process(req, res)) || false;
+    this.verbose(JSON.stringify({ pluginFound, url: req.url }));
+    return pluginFound;
   }
 
   stop() {
