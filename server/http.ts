@@ -79,6 +79,7 @@ export class Http {
 
         const resultHeaders = <OutgoingHttpHeaders>lowercase(result.headers);
 
+        // Set to true if you need the website to include cookies
         resultHeaders["access-control-allow-credentials"] = "true";
         resultHeaders["access-control-allow-origin"] = origin || host || "*";
         resultHeaders["access-control-allow-methods"] = req.method;
@@ -88,20 +89,12 @@ export class Http {
         delete resultHeaders["content-length"];
 
         verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
-        verbose(
-          `response headers:\n${JSON.stringify(resultHeaders, null, "\n")}`
-        );
-        {
+        verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
+        if (true) {
           // Website you wish to allow to connect
           res.setHeader(
             "Access-Control-Allow-Origin",
-            <any>resultHeaders.origin
-          );
-
-          // Request methods you wish to allow
-          res.setHeader(
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+            <any>resultHeaders.origin || "*"
           );
 
           // Request headers you wish to allow
@@ -109,15 +102,16 @@ export class Http {
             "Access-Control-Allow-Headers",
             "X-Requested-With,content-type"
           );
-
-          // Set to true if you need the website to include cookies in the requests sent
-          // to the API (e.g. in case you use sessions)
-          res.setHeader("Access-Control-Allow-Credentials", <any>true);
         }
         res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
 
-        result.body = this.runProcessors(proxyInfo, result.body);
-        res.write(asBody(result.body));
+        const originalBody = result.body;
+        const processedBody = this.runProcessors(proxyInfo, originalBody);
+        const responseData = asBody(processedBody);
+        if (processedBody != responseData) {
+          verbose("RESPONSE BODY DATA\n", responseData);
+        }
+        res.write(responseData);
         res.end();
         return;
       }
@@ -181,13 +175,19 @@ export class Http {
     }
   }
 
-  private runProcessors(proxyInfo: ProxyInfo, finalBody: string | number[]) {
+  private runProcessors(proxyInfo: ProxyInfo, body: string | number[]) {
+    let finalBody = body;
     if (!!proxyInfo.processors) {
       proxyInfo.processors.forEach((processor) => {
         if (!processor.processResponse) return;
+        verbose(`RUNNING PROCESSOR ${processor.name}`);
         finalBody = processor.processResponse(proxyInfo.url, finalBody, {
           proxyPass: proxyInfo.proxyPass!,
         });
+        if (body != finalBody) {
+          body = finalBody;
+          verbose(`Processor ${processor.name} modified body\n: ${body}`);
+        }
       });
     }
     return finalBody;
