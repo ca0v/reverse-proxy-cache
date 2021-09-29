@@ -44,6 +44,7 @@ interface IConfig {
 - v1.0.6 - additional caching strategies, see https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/
 - v1.0.5 - organize code using patterns from popular node projects
   - adds ability to write a mock
+  - allows CORS
 - v1.0.4 - adds system service for deleting by statuscode (e.g. /system/delete=302)
 - v1.0.2 - adds --init and --add commands
 - v1.0.1 - adds support for DELETE OPTIONS, POST, PUT

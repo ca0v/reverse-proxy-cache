@@ -50,7 +50,7 @@ describe("hits the /system endpoint", () => {
     const response1 = await got.post(
       `http://localhost:${proxyPort}/system?mock=add`,
       {
-        body: querystring.stringify({
+        body: JSON.stringify({
           method: "GET",
           url: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md",
           data: mockData,
