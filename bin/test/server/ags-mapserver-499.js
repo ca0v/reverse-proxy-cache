@@ -116,14 +116,14 @@ describe("agol", () => {
         assert.strictEqual(body.error.code, 498);
     });
     it("access /mock/arcgis/rest/services/Feature_Service_Test/FeatureServer (GET)", async () => {
-        const cacheUrl = `http://localhost:3002/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer?f=json&token=abc`;
+        const cacheUrl = `http://localhost:${proxyPort}/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer?f=json&token=abc`;
         const response1 = await got.get(cacheUrl);
         assert.strictEqual(response1.statusCode, 200);
         const body = JSON.parse(response1.body.toString());
         assert.strictEqual(body.error.code, 498);
     });
     it("access /mock/arcgis/rest/services/Feature_Service_Test/FeatureServer (POST)", async () => {
-        const cacheUrl = `http://localhost:3002/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
+        const cacheUrl = `http://localhost:${proxyPort}/mock/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
         const data = querystring.stringify({
             f: "json",
             token: "abc",
@@ -144,6 +144,31 @@ describe("agol", () => {
 // Invalid request <br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens?request=gettoken&username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/generateToken?username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/gettoken.html<br>
 // when using sampleserver5 I get ETIMEOUT although service works from the browser.
 describe("server/ags", () => {
+    const proxyPort = 3004;
+    const config = {
+        "reverse-proxy-cache": {
+            verbose: true,
+            port: `${proxyPort}`,
+            "reverse-proxy-db": "unittest.sqlite",
+            "proxy-pass": [
+                {
+                    about: "test auth ags",
+                    baseUri: "/mock/proxy/arcgis/sharing/oauth2/token",
+                    proxyUri: "https://www.arcgis.com/sharing/oauth2/token",
+                },
+            ],
+        },
+    };
+    let proxy;
+    // start proxy and echo server
+    before(async () => {
+        // start the proxy server
+        proxy = await server_1.run(config);
+    });
+    // shutdown servers
+    after(() => {
+        proxy && proxy.stop();
+    });
     it("access a secure service", async () => {
         return new Promise((good, bad) => {
             const data = JSON.stringify({
@@ -213,7 +238,7 @@ describe("server/ags", () => {
             request.end();
         });
     });
-    it("generate a token from http://localhost:3002/mock/proxy/arcgis/sharing/oauth2/token", async () => {
+    it("generate a token from http://localhost:{proxyPort}/mock/proxy/arcgis/sharing/oauth2/token", async () => {
         return new Promise((good, bad) => {
             const data = querystring.stringify({
                 f: "json",
@@ -224,7 +249,7 @@ describe("server/ags", () => {
             const request = http.request({
                 hostname: "localhost",
                 method: "POST",
-                port: 3002,
+                port: proxyPort,
                 path: "/mock/proxy/arcgis/sharing/oauth2/token",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",

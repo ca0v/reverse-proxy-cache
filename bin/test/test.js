@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./args-test");
 require("./server/systemops");
 require("./server/ags-pbf");
 require("./thirdparty");

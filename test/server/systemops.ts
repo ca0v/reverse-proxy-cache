@@ -45,23 +45,18 @@ describe("hits the /system endpoint", () => {
   });
 
   it("creates a mock entry", async () => {
-    const cacheUrl = `http://localhost:${proxyPort}/system?mock=add`;
-    const endpointToMock =
-      "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md";
     const mockData = "this data was written from a unit test";
 
-    const data = querystring.stringify({
-      method: "GET",
-      url: endpointToMock,
-      data: mockData,
-    });
-    const response1 = await got.post(cacheUrl, {
-      body: data,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Content-Length": data.length,
-      },
-    });
+    const response1 = await got.post(
+      `http://localhost:${proxyPort}/system?mock=add`,
+      {
+        body: querystring.stringify({
+          method: "GET",
+          url: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md",
+          data: mockData,
+        }),
+      }
+    );
 
     assert.strictEqual(
       response1.statusCode,

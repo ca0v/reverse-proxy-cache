@@ -42,10 +42,9 @@ class Http {
             let cachedata = await this.cache.exists(cacheKey);
             if (!!cachedata) {
                 let result = stringify_1.unstringify(cachedata);
-                const resultHeaders = (lowercase_1.lowercase(result.headers));
+                const resultHeaders = lowercase_1.lowercase(result.headers);
                 resultHeaders["access-control-allow-credentials"] = "true";
-                resultHeaders["access-control-allow-origin"] =
-                    origin || host || "*";
+                resultHeaders["access-control-allow-origin"] = origin || host || "*";
                 resultHeaders["access-control-allow-methods"] = req.method;
                 // it is not encoded as it may have been originally
                 delete resultHeaders["content-encoding"];
@@ -65,8 +64,7 @@ class Http {
             delete requestHeaders.connection;
             requestHeaders["accept-encoding"] = ""; // prevents gzip errors
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
-            requestHeaders["cache-control"] =
-                "no-cache, no-store, must-revalidate"; // prevent 304 (maybe?)
+            requestHeaders["cache-control"] = "no-cache, no-store, must-revalidate"; // prevent 304 (maybe?)
             stringify_1.verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
             let result = await got.get(proxyInfo.url, {
                 rejectUnauthorized: false,
@@ -106,7 +104,9 @@ class Http {
             proxyInfo.processors.forEach((processor) => {
                 if (!processor.processResponse)
                     return;
-                finalBody = processor.processResponse(proxyInfo.url, finalBody, { proxyPass: proxyInfo.proxyPass });
+                finalBody = processor.processResponse(proxyInfo.url, finalBody, {
+                    proxyPass: proxyInfo.proxyPass,
+                });
             });
         }
         return finalBody;
@@ -127,7 +127,8 @@ class Http {
         };
         return new Promise((good, bad) => {
             // collect the request body
-            req.on("error", (err) => {
+            req
+                .on("error", (err) => {
                 stringify_1.verbose("invokePost.error");
                 bad(err);
             })
@@ -160,8 +161,7 @@ class Http {
                         body: reqData,
                         headers: {
                             "content-type": reqHeader["content-type"] || "plain-text",
-                            "content-length": reqHeader["content-length"] ||
-                                reqData.length,
+                            "content-length": reqHeader["content-length"] || reqData.length,
                         },
                     });
                     let valueHeaders = lowercase_1.lowercase(value.headers);

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = exports.Server = void 0;
-require("dotenv").config();
 const fs = require("fs");
 const http = require("http");
 const db_1 = require("./server/db");
@@ -9,6 +8,9 @@ const stringify_1 = require("./server/fun/stringify");
 const proxy_1 = require("./server/proxy");
 const http_1 = require("./server/http");
 const url = require("url");
+const parseArgs_1 = require("./parseArgs");
+const DeleteSystemPlugin_1 = require("./DeleteSystemPlugin");
+const AddMockResponseSystemPlugin_1 = require("./AddMockResponseSystemPlugin");
 function sort(o) {
     if (null === o)
         return o;
@@ -28,6 +30,10 @@ class Server {
     constructor(config) {
         this.server = null;
         this.cache = null;
+        this.systemPlugins = [
+            new DeleteSystemPlugin_1.DeleteSystemPlugin(this),
+            new AddMockResponseSystemPlugin_1.AddMockResponseSystemPlugin(this),
+        ];
         if (!config["reverse-proxy-cache"])
             throw "missing configuration: reverse-proxy-cache not found";
         if (!config["reverse-proxy-cache"].port)
@@ -52,6 +58,7 @@ class Server {
         let proxy = new proxy_1.Proxy(config);
         let helper = new http_1.Http(cache);
         this.server = http.createServer(async (req, res) => {
+            // let the plugins have a chance
             if (this.allowIntercepts(req, res))
                 return;
             let url = req.url || "";
@@ -81,16 +88,18 @@ class Server {
                         helper.invokePut(proxyurl, req, res);
                         break;
                     default:
-                        res.writeHead(500, `unsupported method: ${req.method}`, { "content-type": "text/plain" });
+                        res.writeHead(500, `unsupported method: ${req.method}`, {
+                            "content-type": "text/plain",
+                        });
                         res.end();
                         break;
                 }
             }
             catch (ex) {
-                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
+                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex + "");
                 res.writeHead(500, `${(ex + "").substring(0, 16)}`, {
                     "content-type": "text/plain",
-                    body: ex,
+                    body: ex + "",
                 });
                 res.end();
                 return;
@@ -102,28 +111,14 @@ class Server {
         return this;
     }
     allowIntercepts(req, res) {
-        const urlStr = req.url || "";
-        const { query, pathname } = url.parse(urlStr, true);
-        console.log("here", pathname, query, req.method);
-        if (req.method !== "GET")
-            return false;
+        var _a;
+        const { pathname } = url.parse(req.url || "", true);
+        this.verbose("allowIntercepts", req.url || "", pathname || "");
         if (pathname !== "/system")
             return false;
-        if (query.delete) {
-            this.cache.delete(query.delete)
-                .catch((err) => {
-                console.log(err);
-                res.write(JSON.stringify(err));
-                res.end();
-            })
-                .then(() => {
-                console.log("ok");
-                res.write(`deleting where status code is ${query.delete}`);
-                res.end();
-            });
-            return true;
-        }
-        return false;
+        const pluginFound = ((_a = this.systemPlugins) === null || _a === void 0 ? void 0 : _a.some((p) => p.process(req, res))) || false;
+        this.verbose(JSON.stringify({ pluginFound, url: req.url }));
+        return pluginFound;
     }
     stop() {
         if (this.server)
@@ -188,6 +183,9 @@ const handlers = {
 };
 async function run(args) {
     if (Array.isArray(args)) {
+        const parsedArgs = parseArgs_1.parseArgs(args);
+        if (parsedArgs)
+            return;
         let primarySwitch = args[0];
         if (primarySwitch === null || primarySwitch === void 0 ? void 0 : primarySwitch.startsWith("--")) {
             const handlerName = primarySwitch.substring(2);

@@ -18,8 +18,7 @@ class Db {
             return result.db.run("CREATE TABLE cache (url TEXT, res TEXT)", () => {
                 resolve(result);
             }, (err) => {
-                if ("" + err !==
-                    "Error: SQLITE_ERROR: table cache already exists")
+                if ("" + err !== "Error: SQLITE_ERROR: table cache already exists")
                     reject(err);
                 resolve(result);
             });
