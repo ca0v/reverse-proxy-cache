@@ -5,7 +5,7 @@ import {
   IConfig,
   ReverseProxyCache as ReverseProxyCacheConfig,
 } from "./server/contracts";
-import { verbose as dump } from "./server/fun/stringify";
+import { verbose as dump, verbose } from "./server/fun/stringify";
 import { Proxy } from "./server/proxy";
 import { Http } from "./server/http";
 import * as url from "url";
@@ -205,9 +205,11 @@ const handlers: Dictionary<(...args: string[]) => void> = {
 
 export async function run(args: string[] | IConfig) {
   if (Array.isArray(args)) {
-    const parsedArgs = parseArgs(args);
-    if (parsedArgs) return;
-    let primarySwitch = args[0];
+    const primarySwitch = args[0];
+    if (primarySwitch === "--help") {
+      parseArgs(args); // half-baked way of managing commands I guess...
+      return;
+    }
     if (primarySwitch?.startsWith("--")) {
       const handlerName = primarySwitch.substring(2);
       const handler = handlers[handlerName];

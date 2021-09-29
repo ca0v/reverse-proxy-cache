@@ -29,5 +29,5 @@ export function parseArgs(args: string[]) {
   if (program.args?.length) {
     console.log(program.args);
   }
-  return ((outArgs || program.opts()) as unknown) as Arguments;
+  return (outArgs || program.opts()) as unknown as Arguments;
 }

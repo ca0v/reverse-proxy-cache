@@ -1,3 +1,4 @@
 #!/usr/bin/env node
 "use strict";
-require("./server.js").run(process.argv);
+const [nodeExe, thisFile, ...args] = process.argv;
+require("./server.js").run(args);

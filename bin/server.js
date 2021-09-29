@@ -183,10 +183,11 @@ const handlers = {
 };
 async function run(args) {
     if (Array.isArray(args)) {
-        const parsedArgs = parseArgs_1.parseArgs(args);
-        if (parsedArgs)
+        const primarySwitch = args[0];
+        if (primarySwitch === "--help") {
+            parseArgs_1.parseArgs(args); // half-baked way of managing commands I guess...
             return;
-        let primarySwitch = args[0];
+        }
         if (primarySwitch === null || primarySwitch === void 0 ? void 0 : primarySwitch.startsWith("--")) {
             const handlerName = primarySwitch.substring(2);
             const handler = handlers[handlerName];
