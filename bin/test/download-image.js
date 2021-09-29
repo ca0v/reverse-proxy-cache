@@ -13,7 +13,7 @@ const config = {
         "proxy-pass": [
             {
                 baseUri: "/mock/test/MapIcons/",
-                proxyUri: "https://usgvncalix01.infor.com/IPS112/client/images/MapDrawer/MapIcons/",
+                proxyUri: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/",
                 about: "used to test image caching",
             },
         ],

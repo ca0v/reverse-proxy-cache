@@ -38,17 +38,13 @@ class Http {
         stringify_1.verbose(`inbound request headers: ${JSON.stringify(requestHeaders)}`);
         let origin = requestHeaders.origin;
         let host = requestHeaders.host;
-        if (proxyInfo["read-from-cache"]) {
+        if (proxyInfo.readFromCache) {
             let cachedata = await this.cache.exists(cacheKey);
             if (!!cachedata) {
                 let result = stringify_1.unstringify(cachedata);
-                let resultHeaders = (lowercase_1.lowercase(result.headers));
-                if (!!proxyInfo.processors) {
-                    proxyInfo.processors.forEach((processor) => (result.body = processor.processResponse(proxyInfo.url, result.body)));
-                }
+                const resultHeaders = lowercase_1.lowercase(result.headers);
                 resultHeaders["access-control-allow-credentials"] = "true";
-                resultHeaders["access-control-allow-origin"] =
-                    origin || host || "*";
+                resultHeaders["access-control-allow-origin"] = origin || host || "*";
                 resultHeaders["access-control-allow-methods"] = req.method;
                 // it is not encoded as it may have been originally
                 delete resultHeaders["content-encoding"];
@@ -56,6 +52,7 @@ class Http {
                 stringify_1.verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
                 stringify_1.verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
                 res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
+                result.body = this.runProcessors(proxyInfo, result.body);
                 res.write(asBody(result.body));
                 res.end();
                 return;
@@ -67,8 +64,7 @@ class Http {
             delete requestHeaders.connection;
             requestHeaders["accept-encoding"] = ""; // prevents gzip errors
             requestHeaders["accept-content-encoding"] = ""; // prevents gzip errors
-            requestHeaders["cache-control"] =
-                "no-cache, no-store, must-revalidate"; // prevent 304 (maybe?)
+            requestHeaders["cache-control"] = "no-cache, no-store, must-revalidate"; // prevent 304 (maybe?)
             stringify_1.verbose(`outbound request headers: ${JSON.stringify(requestHeaders)}`);
             let result = await got.get(proxyInfo.url, {
                 rejectUnauthorized: false,
@@ -82,12 +78,14 @@ class Http {
                 "access-control-allow-origin": origin || "*",
                 "access-control-allow-methods": req.method,
                 "access-control-allow-headers": resultHeaders["access-control-allow-headers"] || "*",
+                "content-type": resultHeaders["content-type"] || "reverse-proxy/unknown",
             };
             stringify_1.verbose(`outbound response headers: ${JSON.stringify(outboundHeader, null, " ")}`);
             res.writeHead(result.statusCode || 200, outboundHeader);
-            res.write(asBody(result.body));
+            let processedBody = this.runProcessors(proxyInfo, result.body);
+            res.write(asBody(processedBody));
             res.end();
-            if (proxyInfo["write-to-cache"]) {
+            if (proxyInfo.writeToCache) {
                 this.cache.add(cacheKey, stringify_1.stringify({
                     statusCode: result.statusCode,
                     statusMessage: result.statusMessage,
@@ -100,6 +98,18 @@ class Http {
             console.error("failure to invoke", ex);
             this.failure(ex, res);
         }
+    }
+    runProcessors(proxyInfo, finalBody) {
+        if (!!proxyInfo.processors) {
+            proxyInfo.processors.forEach((processor) => {
+                if (!processor.processResponse)
+                    return;
+                finalBody = processor.processResponse(proxyInfo.url, finalBody, {
+                    proxyPass: proxyInfo.proxyPass,
+                });
+            });
+        }
+        return finalBody;
     }
     failure(ex, res) {
         res.writeHead(500, {
@@ -117,7 +127,8 @@ class Http {
         };
         return new Promise((good, bad) => {
             // collect the request body
-            req.on("error", (err) => {
+            req
+                .on("error", (err) => {
                 stringify_1.verbose("invokePost.error");
                 bad(err);
             })
@@ -129,12 +140,13 @@ class Http {
                 .on("end", async () => {
                 stringify_1.verbose("invokePost.end");
                 try {
-                    if (url["read-from-cache"]) {
+                    if (url.readFromCache) {
                         let cachedata = await this.cache.exists(stringify_1.stringify(cacheKey));
                         // found in cache, response with cached data
                         if (!!cachedata) {
                             let value = stringify_1.unstringify(cachedata);
                             res.writeHead(value.statusCode || 200, value.statusMessage, value.headers);
+                            value.body = this.runProcessors(url, value.body);
                             res.write(value.body);
                             res.end();
                             good(value.body);
@@ -149,15 +161,15 @@ class Http {
                         body: reqData,
                         headers: {
                             "content-type": reqHeader["content-type"] || "plain-text",
-                            "content-length": reqHeader["content-length"] ||
-                                reqData.length,
+                            "content-length": reqHeader["content-length"] || reqData.length,
                         },
                     });
                     let valueHeaders = lowercase_1.lowercase(value.headers);
                     res.writeHead(value.statusCode || 200, value.statusMessage, valueHeaders);
+                    value.body = this.runProcessors(url, value.body);
                     res.write(value.body);
                     res.end();
-                    if (url["write-to-cache"]) {
+                    if (url.writeToCache) {
                         this.cache.add(stringify_1.stringify(cacheKey), stringify_1.stringify({
                             statusCode: value.statusCode,
                             statusMessage: value.statusMessage,

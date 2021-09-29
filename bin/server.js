@@ -1,13 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = exports.Server = void 0;
-require("dotenv").config();
 const fs = require("fs");
 const http = require("http");
 const db_1 = require("./server/db");
 const stringify_1 = require("./server/fun/stringify");
 const proxy_1 = require("./server/proxy");
 const http_1 = require("./server/http");
+const url = require("url");
+const parseArgs_1 = require("./parseArgs");
+const DeleteSystemPlugin_1 = require("./DeleteSystemPlugin");
+const AddMockResponseSystemPlugin_1 = require("./AddMockResponseSystemPlugin");
 function sort(o) {
     if (null === o)
         return o;
@@ -27,6 +30,10 @@ class Server {
     constructor(config) {
         this.server = null;
         this.cache = null;
+        this.systemPlugins = [
+            new DeleteSystemPlugin_1.DeleteSystemPlugin(this),
+            new AddMockResponseSystemPlugin_1.AddMockResponseSystemPlugin(this),
+        ];
         if (!config["reverse-proxy-cache"])
             throw "missing configuration: reverse-proxy-cache not found";
         if (!config["reverse-proxy-cache"].port)
@@ -51,6 +58,9 @@ class Server {
         let proxy = new proxy_1.Proxy(config);
         let helper = new http_1.Http(cache);
         this.server = http.createServer(async (req, res) => {
+            // let the plugins have a chance
+            if (this.allowIntercepts(req, res))
+                return;
             let url = req.url || "";
             let proxyurl = proxy.proxy(url);
             if (proxyurl.url === url) {
@@ -78,16 +88,18 @@ class Server {
                         helper.invokePut(proxyurl, req, res);
                         break;
                     default:
-                        res.writeHead(500, `unsupported method: ${req.method}`, { "content-type": "text/plain" });
+                        res.writeHead(500, `unsupported method: ${req.method}`, {
+                            "content-type": "text/plain",
+                        });
                         res.end();
                         break;
                 }
             }
             catch (ex) {
-                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex);
+                this.verbose(`${req.method} request failed for ${proxyurl}:\n`, ex + "");
                 res.writeHead(500, `${(ex + "").substring(0, 16)}`, {
                     "content-type": "text/plain",
-                    body: ex,
+                    body: ex + "",
                 });
                 res.end();
                 return;
@@ -97,6 +109,16 @@ class Server {
         this.server.listen(port);
         this.verbose(`listening on ${port}`);
         return this;
+    }
+    allowIntercepts(req, res) {
+        var _a;
+        const { pathname } = url.parse(req.url || "", true);
+        this.verbose("allowIntercepts", req.url || "", pathname || "");
+        if (pathname !== "/system")
+            return false;
+        const pluginFound = ((_a = this.systemPlugins) === null || _a === void 0 ? void 0 : _a.some((p) => p.process(req, res))) || false;
+        this.verbose(JSON.stringify({ pluginFound, url: req.url }));
+        return pluginFound;
     }
     stop() {
         if (this.server)
@@ -141,6 +163,12 @@ function addHandler(switchName, gatewayFile, externalUri, internalName) {
     cache["proxy-pass"] = sort(cache["proxy-pass"]);
     fs.writeFileSync(gatewayFile, JSON.stringify(config, null, 2));
 }
+function deleteHandler(switchName, gatewayFile, fromCacheWhereResLike) {
+    if ("--delete" !== switchName)
+        throw "invalid switch";
+    if (!gatewayFile)
+        throw `you must specify a target package.json files as the 1st argument`;
+}
 function initHandler(switchName, gatewayFile) {
     if ("--init" !== switchName)
         throw "invalid switch";
@@ -151,9 +179,13 @@ function initHandler(switchName, gatewayFile) {
 const handlers = {
     init: initHandler,
     add: addHandler,
+    delete: deleteHandler,
 };
 async function run(args) {
     if (Array.isArray(args)) {
+        const parsedArgs = parseArgs_1.parseArgs(args);
+        if (parsedArgs)
+            return;
         let primarySwitch = args[0];
         if (primarySwitch === null || primarySwitch === void 0 ? void 0 : primarySwitch.startsWith("--")) {
             const handlerName = primarySwitch.substring(2);

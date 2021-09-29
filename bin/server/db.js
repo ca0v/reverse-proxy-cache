@@ -18,8 +18,7 @@ class Db {
             return result.db.run("CREATE TABLE cache (url TEXT, res TEXT)", () => {
                 resolve(result);
             }, (err) => {
-                if ("" + err !==
-                    "Error: SQLITE_ERROR: table cache already exists")
+                if ("" + err !== "Error: SQLITE_ERROR: table cache already exists")
                     reject(err);
                 resolve(result);
             });
@@ -43,6 +42,17 @@ class Db {
             cmd.run(url, res, (err) => {
                 cmd.finalize();
                 err ? reject(err) : resolve();
+            });
+        });
+        return p;
+    }
+    delete(statusCode) {
+        stringify_1.verbose("db.delete status code", statusCode);
+        let cmd = this.db.prepare(`DELETE FROM cache WHERE res LIKE '%"statusCode": ${statusCode}%'`);
+        let p = new Promise((resolve, reject) => {
+            cmd.run((err) => {
+                cmd.finalize();
+                err ? reject(err) : resolve(err);
             });
         });
         return p;

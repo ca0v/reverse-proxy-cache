@@ -14,21 +14,27 @@ class HttpsGet {
         if (!requestOptions.method)
             requestOptions.method = "GET";
         let protocol = url.startsWith("https://") ? https : http;
-        let p = new Promise((good, bad) => {
-            let req = protocol
+        const p = new Promise((good, bad) => {
+            const req = protocol
                 .request(urlOptions, requestOptions, (res) => {
-                let mimeType = res.headers["content-type"] || "text/plain";
-                let isBinary = isBinaryMimeType_1.isBinaryMimeType(mimeType);
+                const mimeType = res.headers["content-type"] || "text/plain";
+                const isBinary = isBinaryMimeType_1.isBinaryMimeType(mimeType);
                 stringify_1.verbose({ mimeType, isBinary });
-                let data = [];
+                const data = [];
                 stringify_1.verbose("https response statusCode: ", res.statusCode);
-                let complete = () => good({
-                    body: isBinary ? data : bufferToString_1.bufferToString(data),
-                    headers: res.headers,
-                    statusCode: res.statusCode || 0,
-                    statusMessage: res.statusMessage || "",
-                });
-                res.on("close", () => {
+                const complete = () => {
+                    let body = data;
+                    if (!isBinary)
+                        body = bufferToString_1.bufferToString(data);
+                    good({
+                        body: body,
+                        headers: res.headers,
+                        statusCode: res.statusCode || 0,
+                        statusMessage: res.statusMessage || "",
+                    });
+                };
+                res
+                    .on("close", () => {
                     // close
                     stringify_1.verbose(`res.close size:${data.length}`);
                     complete();
@@ -36,7 +42,7 @@ class HttpsGet {
                     .on("data", (chunk) => {
                     // data
                     stringify_1.verbose("res.data", chunk.length);
-                    data.push(...chunk);
+                    chunk.length && data.push(...chunk);
                 })
                     .on("end", () => {
                     // end
@@ -79,31 +85,35 @@ class HttpsGet {
         return p;
     }
     post(url, options) {
-        let protocol = url.startsWith("https://") ? https : http;
-        let requestOptions = new URL(url);
+        const protocol = url.startsWith("https://") ? https : http;
+        const requestOptions = new URL(url);
         options.method = "POST";
         // copy options into requestOptions (native mixin?)
-        let body = options.body;
+        const body = options.body;
         stringify_1.verbose("POST OPTIONS:", requestOptions);
-        let p = new Promise((good, bad) => {
-            let req = protocol
-                .request(requestOptions, options, (res) => {
-                let data = "";
-                let complete = () => good({
-                    body: data,
-                    headers: res.headers,
-                    statusCode: res.statusCode || 0,
-                    statusMessage: res.statusMessage || "",
-                });
-                res.on("close", () => {
+        const p = new Promise((good, bad) => {
+            const req = protocol
+                .request(requestOptions, options, (inboundResponse) => {
+                const data = [];
+                const complete = () => {
+                    good({
+                        body: data.join(""),
+                        headers: inboundResponse.headers,
+                        statusCode: inboundResponse.statusCode || 0,
+                        statusMessage: inboundResponse.statusMessage || "",
+                    });
+                    stringify_1.verbose("POST completed");
+                };
+                inboundResponse
+                    .on("close", () => {
                     // close
                     stringify_1.verbose("res.close data", `"${data}"`);
                     complete();
                 })
                     .on("data", (chunk) => {
                     // data
-                    stringify_1.verbose("res.data", chunk);
-                    data += chunk;
+                    stringify_1.verbose("res.data", `"${chunk}"`);
+                    chunk.length && data.push(chunk);
                 })
                     .on("end", () => {
                     // end
@@ -112,7 +122,7 @@ class HttpsGet {
                 })
                     .on("error", (err) => {
                     // error
-                    stringify_1.verbose("res.error");
+                    stringify_1.verbose("res.error", err.message);
                     bad(err);
                 });
             })
@@ -141,9 +151,9 @@ class HttpsGet {
                 stringify_1.verbose("req.unpipe");
             });
             stringify_1.verbose("write.body", body);
-            req.write(body, (err) => {
+            req.write(body, (data) => {
                 // write
-                stringify_1.verbose("write.err", err || "");
+                stringify_1.verbose("write.body", data || "");
             });
             req.end(() => {
                 // end

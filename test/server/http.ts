@@ -10,7 +10,7 @@ function rightOf(v: string, pattern: string) {
     return i === -1 ? "" : v.substring(i + 1);
 }
 function promisify<T>(value: T) {
-    return new Promise<T>(good => good(value));
+    return new Promise<T>((good) => good(value));
 }
 
 const echoPort = 3003;
@@ -31,7 +31,6 @@ describe("tests http", () => {
         echo.stop();
     });
 
-
     it("api", () => {
         assert.ok(Http.prototype.invokeDelete);
         assert.ok(Http.prototype.invokeGet);
@@ -40,10 +39,27 @@ describe("tests http", () => {
         assert.ok(Http.prototype.invokePut);
     });
 
-    it("tests invoke", done => {
+    false &&
+        it("tests echo", (done) => {
+            const request = node_http.get(
+                `http://localhost:${echoPort}/echo?foo=bar`,
+                (res) => {
+                    let data = "";
+                    assert.equal("echo/text", res.headers["content-type"]);
+                    res.on("data", (chunk) => {
+                        data += chunk;
+                    });
+                    res.on("end", () => {
+                        done();
+                    });
+                }
+            );
+        });
+
+    it("tests invoke", (done) => {
         let db: IDb = {
             exists: (url: string) => promisify(url),
-            add: (url: string, res: string) => {}
+            add: (url: string, res: string) => {},
         };
 
         let http = new Http(db);
@@ -54,7 +70,9 @@ describe("tests http", () => {
 
             http.invokeGet(
                 {
-                    url: `http://localhost:${echoPort}/echo?${querystring.stringify(query)}`
+                    url: `http://localhost:${echoPort}/echo?${querystring.stringify(
+                        query
+                    )}`,
                 },
                 req,
                 res
@@ -63,24 +81,32 @@ describe("tests http", () => {
 
         server.listen(proxyPort);
 
-        node_http
-            .get(`http://localhost:${proxyPort}/echo?foo=bar&bar=foo`, res => {
-                let data = ""; // what if it is binary data?
-                res.on("data", chunk => {
-                    data += chunk;
-                }).on("end", () => {
-                    try {
-                        assert.ok(data);
-                        assert.equal(data, "echo()", "empty echo response");
-                        done();
-                    } catch (ex) {
-                        done(ex);
-                    } finally {
-                        server.close();
-                        echo.stop();
-                    }
-                });
-            })
-            .on("error", err => done(err));
+        const response = node_http
+            .get(
+                `http://localhost:${proxyPort}/echo?foo=bar&bar=foo`,
+                (res) => {
+                    assert.equal(
+                        res.headers["content-type"],
+                        "echo/text",
+                        "content type is echo/text"
+                    );
+                    let data = ""; // what if it is binary data?
+                    res.on("data", (chunk) => {
+                        data += chunk;
+                    }).on("end", () => {
+                        try {
+                            assert.ok(data);
+                            assert.equal(data, "echo()", "empty echo response");
+                            done();
+                        } catch (ex) {
+                            done(ex);
+                        } finally {
+                            server.close();
+                            echo.stop();
+                        }
+                    });
+                }
+            )
+            .on("error", (err) => done(err));
     });
 });
