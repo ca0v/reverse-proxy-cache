@@ -118,6 +118,11 @@ class Server {
             return false;
         const pluginFound = ((_a = this.systemPlugins) === null || _a === void 0 ? void 0 : _a.some((p) => p.process(req, res))) || false;
         this.verbose(JSON.stringify({ pluginFound, url: req.url }));
+        if (pluginFound) {
+            res.setHeader("access-control-allow-credentials", "true");
+            res.setHeader("access-control-allow-origin", req.headers.origin || "*");
+            res.setHeader("access-control-allow-methods", req.method || "*");
+        }
         return pluginFound;
     }
     stop() {

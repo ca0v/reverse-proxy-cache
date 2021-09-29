@@ -1,6 +1,7 @@
 "use strict";
 class Processor {
     constructor() {
+        this.name = "ignore-callback-querystring";
         this.regex = /[?&]callback=([^&]*)/;
         this.regexFn = /[\w_][\w\d_]*\(/; // foo(
     }
@@ -15,10 +16,6 @@ class Processor {
         let cbOriginalName = this.regex.exec(request);
         // if none found, strip the function wrapper (for what purpose?)
         if (!cbOriginalName) {
-            if (!this.regexFn.test(response))
-                return response;
-            response = response.replace(this.regexFn, "");
-            response = response.substring(0, response.length - 2); // remove the ");"
             return response;
         }
         // pjson - replace the cached callback name with the requested callback name so client is callbacked back

@@ -43,6 +43,7 @@ class Http {
             if (!!cachedata) {
                 let result = stringify_1.unstringify(cachedata);
                 const resultHeaders = lowercase_1.lowercase(result.headers);
+                // Set to true if you need the website to include cookies
                 resultHeaders["access-control-allow-credentials"] = "true";
                 resultHeaders["access-control-allow-origin"] = origin || host || "*";
                 resultHeaders["access-control-allow-methods"] = req.method;
@@ -51,9 +52,20 @@ class Http {
                 delete resultHeaders["content-length"];
                 stringify_1.verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
                 stringify_1.verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
+                if (true) {
+                    // Website you wish to allow to connect
+                    res.setHeader("Access-Control-Allow-Origin", resultHeaders.origin || "*");
+                    // Request headers you wish to allow
+                    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
+                }
                 res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
-                result.body = this.runProcessors(proxyInfo, result.body);
-                res.write(asBody(result.body));
+                const originalBody = result.body;
+                const processedBody = this.runProcessors(proxyInfo, originalBody);
+                const responseData = asBody(processedBody);
+                if (processedBody != responseData) {
+                    stringify_1.verbose("RESPONSE BODY DATA\n", responseData);
+                }
+                res.write(responseData);
                 res.end();
                 return;
             }
@@ -99,14 +111,20 @@ class Http {
             this.failure(ex, res);
         }
     }
-    runProcessors(proxyInfo, finalBody) {
+    runProcessors(proxyInfo, body) {
+        let finalBody = body;
         if (!!proxyInfo.processors) {
             proxyInfo.processors.forEach((processor) => {
                 if (!processor.processResponse)
                     return;
+                stringify_1.verbose(`RUNNING PROCESSOR ${processor.name}`);
                 finalBody = processor.processResponse(proxyInfo.url, finalBody, {
                     proxyPass: proxyInfo.proxyPass,
                 });
+                if (body != finalBody) {
+                    body = finalBody;
+                    stringify_1.verbose(`Processor ${processor.name} modified body\n: ${body}`);
+                }
             });
         }
         return finalBody;

@@ -5,6 +5,9 @@ url to the resulting image.
 https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export
  */
 class Processor {
+    constructor() {
+        this.name = "search-and-replace";
+    }
     processResponse(request, response, options) {
         if (typeof response !== "string")
             return response;

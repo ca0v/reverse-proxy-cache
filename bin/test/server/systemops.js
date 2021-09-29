@@ -4,7 +4,6 @@ const server_1 = require("../../server");
 const assert = require("assert");
 const http_get_1 = require("../../server/fun/http-get");
 const stringify_1 = require("../../server/fun/stringify");
-const querystring = require("querystring");
 describe("hits the /system endpoint", () => {
     const got = new http_get_1.HttpsGet();
     const proxyPort = 3004;
@@ -41,7 +40,7 @@ describe("hits the /system endpoint", () => {
     it("creates a mock entry", async () => {
         const mockData = "this data was written from a unit test";
         const response1 = await got.post(`http://localhost:${proxyPort}/system?mock=add`, {
-            body: querystring.stringify({
+            body: JSON.stringify({
                 method: "GET",
                 url: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md",
                 data: mockData,

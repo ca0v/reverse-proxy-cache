@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddMockResponseSystemPlugin = void 0;
 const url = require("url");
 const stringify_1 = require("./server/fun/stringify");
-const querystring_1 = require("querystring");
 const lowercase_1 = require("./server/fun/lowercase");
+function asStatus(message) {
+    return JSON.stringify({ status: message });
+}
 class AddMockResponseSystemPlugin {
     constructor(server) {
         this.server = server;
@@ -30,17 +32,21 @@ class AddMockResponseSystemPlugin {
                     stringify_1.verbose("failed to upload mock data", err.message);
                 })
                     .on("data", (chunk) => {
-                    stringify_1.verbose("uploading mock data");
+                    stringify_1.verbose("uploading mock data", chunk);
                     data.push(chunk);
                 })
                     // check the cache, invoke if missing
                     .on("end", async () => {
-                    const mockData = querystring_1.parse(data.join(""));
+                    const rawData = data.join("");
+                    const mockData = JSON.parse(rawData);
+                    stringify_1.verbose("mock method:", mockData.method);
+                    stringify_1.verbose("mock url:", mockData.url);
                     try {
                         const urlKey = stringify_1.stringify({
                             method: mockData.method,
                             url: mockData.url,
                         });
+                        stringify_1.verbose(`checking if mock dataexists: ${mockData.method} for ${mockData.url}`);
                         const exists = await cache.exists(urlKey);
                         if (!exists) {
                             await cache.add(urlKey, stringify_1.stringify({
@@ -50,16 +56,16 @@ class AddMockResponseSystemPlugin {
                                 body: mockData.data,
                             }));
                             stringify_1.verbose("mock data was saved to the cache");
-                            res.write(`mocked ${query.mock}`);
+                            res.write(asStatus(`mocked ${query.mock}`));
                             res.end();
                         }
                         else {
-                            res.write(`mock already exists`);
+                            res.write(asStatus(`mock already exists: ${urlKey}`));
                             res.end();
                         }
                     }
                     catch (ex) {
-                        stringify_1.verbose("failed to add the mock data", ex + "");
+                        stringify_1.verbose(asStatus(`failed to add the mock data: ${ex + ""}`));
                         res.write(JSON.stringify(ex));
                         res.end();
                     }
