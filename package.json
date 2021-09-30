@@ -17,7 +17,8 @@
     "watch:build": "npm run build -- -w",
     "dev": "npm-run-all -p watch:build watch:test",
     "build": "tsc",
-    "install": "npm run build",
+    "deploy": "tsc -p tsconfig-deploy.json",
+    "install": "node ./bin/exitzero.js npm run deploy",
     "format": "npm run server -- --init"
   },
   "keywords": [],
