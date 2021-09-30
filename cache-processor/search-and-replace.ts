@@ -25,6 +25,4 @@ class Processor implements IProcessor {
   }
 }
 
-let processor = new Processor();
-
-export = processor;
+export const processor = new Processor();

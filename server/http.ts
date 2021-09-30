@@ -1,4 +1,9 @@
-import http, { OutgoingHttpHeaders } from "http";
+import {
+  IncomingHttpHeaders,
+  IncomingMessage,
+  ServerResponse,
+  OutgoingHttpHeaders,
+} from "http";
 import { IDb } from "./db";
 import { stringify, unstringify, verbose } from "./fun/stringify";
 import { lowercase } from "./fun/lowercase";
@@ -16,8 +21,8 @@ export class Http {
 
   public async invokeDelete(
     url: ProxyInfo,
-    req: http.IncomingMessage,
-    res: http.ServerResponse
+    req: IncomingMessage,
+    res: ServerResponse
   ) {
     console.assert(req.method === "DELETE");
     return this.invoke(url, req, res);
@@ -25,8 +30,8 @@ export class Http {
 
   public async invokeOptions(
     url: ProxyInfo,
-    req: http.IncomingMessage,
-    res: http.ServerResponse
+    req: IncomingMessage,
+    res: ServerResponse
   ) {
     console.assert(req.method === "OPTIONS");
     return this.invoke(url, req, res);
@@ -34,8 +39,8 @@ export class Http {
 
   public async invokeGet(
     url: ProxyInfo,
-    req: http.IncomingMessage,
-    res: http.ServerResponse
+    req: IncomingMessage,
+    res: ServerResponse
   ) {
     console.assert(req.method === "GET");
     return this.invoke(url, req, res);
@@ -43,8 +48,8 @@ export class Http {
 
   public async invokePut(
     url: ProxyInfo,
-    req: http.IncomingMessage,
-    res: http.ServerResponse
+    req: IncomingMessage,
+    res: ServerResponse
   ) {
     console.assert(req.method === "PUT");
     return this.invoke(url, req, res);
@@ -52,8 +57,8 @@ export class Http {
 
   private async invoke(
     proxyInfo: ProxyInfo,
-    req: http.IncomingMessage,
-    res: http.ServerResponse
+    req: IncomingMessage,
+    res: ServerResponse
   ) {
     verbose("invoke proxy info: ", proxyInfo);
     let cacheKey = stringify({
@@ -135,7 +140,7 @@ export class Http {
       let resultHeaders = lowercase(result.headers);
       verbose(`inbound response headers: ${JSON.stringify(resultHeaders)}`);
 
-      let outboundHeader: http.IncomingHttpHeaders = {
+      let outboundHeader: IncomingHttpHeaders = {
         "access-control-allow-credentials": "true",
         "access-control-allow-origin": origin || "*",
         "access-control-allow-methods": req.method,
@@ -193,7 +198,7 @@ export class Http {
     return finalBody;
   }
 
-  private failure(ex: any, res: http.ServerResponse) {
+  private failure(ex: any, res: ServerResponse) {
     res.writeHead(500, {
       "content-type": "text/plain",
       body: ex,
@@ -203,8 +208,8 @@ export class Http {
 
   public async invokePost(
     url: ProxyInfo,
-    req: http.IncomingMessage,
-    res: http.ServerResponse
+    req: IncomingMessage,
+    res: ServerResponse
   ) {
     console.assert(req.method === "POST");
     let cacheKey = {
