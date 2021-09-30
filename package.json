@@ -17,6 +17,7 @@
     "watch:build": "npm run build -- -w",
     "dev": "npm-run-all -p watch:build watch:test",
     "build": "tsc",
+    "install": "npm run build",
     "format": "npm run server -- --init"
   },
   "keywords": [],
@@ -27,9 +28,7 @@
     "dotenv": "^10.0.0",
     "got": "^9.6.0",
     "sqlite": "^4.0.23",
-    "sqlite3": "^5.0.2"
-  },
-  "devDependencies": {
+    "sqlite3": "^5.0.2",
     "@types/got": "^9.4.4",
     "@types/http-proxy": "^1.17.0",
     "@types/mocha": "^5.2.7",
