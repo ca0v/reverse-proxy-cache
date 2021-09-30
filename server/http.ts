@@ -13,7 +13,10 @@ import { ProxyInfo } from "./contracts";
 let got = new HttpsGet();
 
 function asBody(data: string | Array<number>) {
-  return typeof data === "string" ? data : Buffer.from(data);
+  if (typeof data === "string") return data;
+  if (Array.isArray(data)) return Buffer.from(data);
+  verbose("UNKNOWN BODY TYPE");
+  if (typeof data === "object") return JSON.stringify(data);
 }
 
 export class Http {
@@ -181,20 +184,20 @@ export class Http {
   }
 
   private runProcessors(proxyInfo: ProxyInfo, body: string | number[]) {
+    if (!proxyInfo?.processors) return body;
     let finalBody = body;
-    if (!!proxyInfo.processors) {
-      proxyInfo.processors.forEach((processor) => {
-        if (!processor.processResponse) return;
-        verbose(`RUNNING PROCESSOR ${processor.name}`);
-        finalBody = processor.processResponse(proxyInfo.url, finalBody, {
-          proxyPass: proxyInfo.proxyPass!,
-        });
-        if (body != finalBody) {
-          body = finalBody;
-          verbose(`Processor ${processor.name} modified body\n: ${body}`);
-        }
+    proxyInfo.processors.forEach((processor) => {
+      verbose(`RUNNING PROCESSOR ${processor.name}`);
+      if (!processor.processResponse) return;
+      verbose(`RUNNING processResponse`);
+      finalBody = processor.processResponse(proxyInfo.url, finalBody, {
+        proxyPass: proxyInfo.proxyPass!,
       });
-    }
+      if (body != finalBody) {
+        body = finalBody;
+        verbose(`Processor ${processor.name} modified body\n: ${body}`);
+      }
+    });
     return finalBody;
   }
 
