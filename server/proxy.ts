@@ -18,6 +18,8 @@ export class Proxy {
   constructor(private config: ReverseProxyCache) {
     // nothing to do
   }
+
+  // given a mock url find the proxy info
   proxy(url: string): ProxyInfo {
     const proxyPass = this.config["proxy-pass"];
     if (!proxyPass) {
@@ -30,6 +32,7 @@ export class Proxy {
     matches.sort((a, b) => a.baseUri.length - b.baseUri.length);
     const match = <ProxyPass>matches.pop();
     if (!match) {
+      verbose(`no proxy match found for ${url}`);
       return { url };
     }
 

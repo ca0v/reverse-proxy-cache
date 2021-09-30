@@ -49,10 +49,17 @@ export class AddMockResponseSystemPlugin {
             verbose("mock method:", mockData.method);
             verbose("mock url:", mockData.url);
 
+            const actualUrl =
+              this.server?.proxy?.proxy(mockData.url)?.url || mockData.url;
+
+            if (actualUrl !== mockData.url) {
+              verbose(`creating mock for ${actualUrl} using ${mockData.url}`);
+            }
+
             try {
               const urlKey = stringify({
                 method: mockData.method,
-                url: mockData.url,
+                url: actualUrl,
               });
 
               verbose(

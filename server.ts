@@ -27,8 +27,11 @@ function sort(o: any): any {
 }
 
 export class Server {
-  private server: http.Server | null = null;
   public cache: Db | null = null;
+  public proxy: Proxy | null = null;
+
+  private server: http.Server | null = null;
+
   private config: ReverseProxyCacheConfig;
   private systemPlugins = [
     new DeleteSystemPlugin(this),
@@ -58,13 +61,13 @@ export class Server {
     const cache = await Db.init(config);
     this.cache = cache;
     if (!cache) throw "db failed to return a database connection";
-    let proxy = new Proxy(config);
-    let helper = new Http(cache);
+    const proxy = (this.proxy = new Proxy(config));
+    const helper = new Http(cache);
     this.server = http.createServer(async (req, res) => {
       // let the plugins have a chance
       if (this.allowIntercepts(req, res)) return;
-      let url = req.url || "";
-      let proxyurl = proxy.proxy(url);
+      const url = req.url || "";
+      const proxyurl = proxy.proxy(url);
       if (proxyurl.url === url) {
         res.writeHead(500, { "content-type": "text/plain" });
         res.write("no configuration found for this endpoint");

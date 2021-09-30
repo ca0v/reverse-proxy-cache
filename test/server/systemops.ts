@@ -44,7 +44,7 @@ describe("hits the /system endpoint", () => {
     assert.strictEqual(response1.body, "deleting where status code is 504");
   });
 
-  it("creates a mock entry", async () => {
+  it("creates a mock entry using source urls", async () => {
     const mockData = "this data was written from a unit test";
 
     const response1 = await got.post(
@@ -66,6 +66,34 @@ describe("hits the /system endpoint", () => {
 
     const response2 = await got.get(
       `http://localhost:${proxyPort}/mock/test/MapIcons/README.md`
+    );
+
+    verbose("RESPONSE BODY", response2.body);
+    assert.strictEqual(response2.body, mockData, "the mock data was written");
+  });
+
+  it("creates a mock entry using a mock url", async () => {
+    const mockData = "this data was written from a unit test";
+
+    const response1 = await got.post(
+      `http://localhost:${proxyPort}/system?mock=add`,
+      {
+        body: JSON.stringify({
+          method: "GET",
+          url: `/mock/test/MapIcons/README2.md`,
+          data: mockData,
+        }),
+      }
+    );
+
+    assert.strictEqual(
+      response1.statusCode,
+      200,
+      "mock request was successful"
+    );
+
+    const response2 = await got.get(
+      `http://localhost:${proxyPort}/mock/test/MapIcons/README2.md`
     );
 
     verbose("RESPONSE BODY", response2.body);
