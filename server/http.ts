@@ -87,11 +87,6 @@ export class Http {
 
         const resultHeaders = <OutgoingHttpHeaders>lowercase(result.headers);
 
-        // Set to true if you need the website to include cookies
-        resultHeaders["access-control-allow-credentials"] = "true";
-        resultHeaders["access-control-allow-origin"] = origin || host || "*";
-        resultHeaders["access-control-allow-methods"] = req.method;
-
         // it is not encoded as it may have been originally
         delete resultHeaders["content-encoding"];
         delete resultHeaders["content-length"];
@@ -99,11 +94,12 @@ export class Http {
         verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
         verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
         if (true) {
+          // Set to true if you need the website to include cookies
+          res.setHeader("Access-Control-Allow-Credentials", "true");
+          res.setHeader("Access-Control-Allow-Methods", req.method);
+
           // Website you wish to allow to connect
-          res.setHeader(
-            "Access-Control-Allow-Origin",
-            <any>resultHeaders.origin || "*"
-          );
+          res.setHeader("Access-Control-Allow-Origin", origin || host || "*");
 
           // Request headers you wish to allow
           res.setHeader(
@@ -144,7 +140,7 @@ export class Http {
       verbose(`inbound response headers: ${JSON.stringify(resultHeaders)}`);
 
       let outboundHeader: IncomingHttpHeaders = {
-        "access-control-allow-credentials": "true",
+        "Access-Control-Allow-Credentials": "true",
         "access-control-allow-origin": origin || "*",
         "access-control-allow-methods": req.method,
         "access-control-allow-headers":

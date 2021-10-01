@@ -1,9 +1,9 @@
 {
   "exclude": ["./bin"],
   "compilerOptions": {
+    "noEmit": true,
     "target": "ES2020",
     "module": "CommonJS",
-    "noEmit": false,
     "sourceMap": false,
     "outDir": "./bin",
     "strict": true,

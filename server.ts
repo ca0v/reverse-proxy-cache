@@ -126,7 +126,7 @@ export class Server {
       this.systemPlugins?.some((p) => p.process(req, res)) || false;
     this.verbose(JSON.stringify({ pluginFound, url: req.url }));
     if (pluginFound) {
-      res.setHeader("access-control-allow-credentials", "true");
+      res.setHeader("Access-Control-Allow-Credentials", "true");
       res.setHeader(
         "access-control-allow-origin",
         <any>req.headers.origin || "*"
