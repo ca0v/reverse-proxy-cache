@@ -64,6 +64,7 @@ export class Proxy {
     return {
       url: actualUrl,
       key: cacheKey,
+      offline: !!this.config.offline,
       writeToCache: !match["no-cache"] || "writeonly" === match["no-cache"],
       readFromCache: !match["no-cache"] || "readonly" === match["no-cache"],
       proxyPass: match,

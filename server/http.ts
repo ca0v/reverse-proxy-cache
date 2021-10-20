@@ -120,6 +120,11 @@ export class Http {
         return;
       }
     }
+
+    if (true === proxyInfo.offline) {
+      throw "offline";
+    }
+
     try {
       delete requestHeaders["user-agent"];
       delete requestHeaders.host;
@@ -254,6 +259,11 @@ export class Http {
                 return;
               }
             }
+
+            if (true === url.offline) {
+              throw "offline";
+            }
+
             // invoke actual service, cache the response
             const reqHeader = lowercase(req.headers);
             const reqData = cacheKey.request; // query string format

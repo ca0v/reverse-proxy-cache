@@ -16,8 +16,10 @@ Reverse Proxy with Caching to facilitate service oriented unit tests
 
 ## Cli
 
-- `npx reverse-proxy-cache [package.json]`
 - `npx reverse-proxy-cache --init`
+- `npx reverse-proxy-cache --readonly`
+- `npx reverse-proxy-cache --help`
+- `npx reverse-proxy-cache [package.json]`
 - `npx reverse-proxy-cache --add package.json https://www.arcgis.com arcgis`
 
 ## Configure
@@ -30,6 +32,7 @@ interface IConfig {
   "reverse-proxy-cache": {
     "port": string;
     verbose: boolean;
+    offline: boolean;
     "reverse-proxy-db": string;
     "proxy-pass": Array<{
       baseUri: string;
@@ -46,6 +49,7 @@ interface IConfig {
 | option           | description                                   |
 | ---------------- | --------------------------------------------- |
 | port             | proxy port                                    |
+| offline          | fail on a cache miss when true                |
 | verbose          | verbose output (true or false)                |
 | reverse-proxy-db | identifies the sqlite file to use for caching |
 | proxy-pass       | list of resources to proxy                    |

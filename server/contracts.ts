@@ -5,6 +5,7 @@ export interface Dictionary<T> {
 export type ProxyInfo = {
   url: string;
   key?: string;
+  offline?: boolean;
   processors?: IProcessor[];
   writeToCache?: boolean;
   readFromCache?: boolean;
@@ -30,6 +31,7 @@ export interface IConfig {
 }
 
 export interface ReverseProxyCache {
+  offline?: boolean;
   port: string;
   verbose: boolean;
   "reverse-proxy-db": string;

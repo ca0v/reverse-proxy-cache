@@ -12,8 +12,11 @@ import * as url from "url";
 import { parseArgs } from "./parseArgs";
 import { DeleteSystemPlugin } from "./DeleteSystemPlugin";
 import { AddMockResponseSystemPlugin } from "./AddMockResponseSystemPlugin";
+import { addHandler } from "./addHandler";
+import { deleteHandler } from "./deleteHandler";
+import { asConfig } from "./asConfig";
 
-function sort(o: any): any {
+export function sort(o: any): any {
   if (null === o) return o;
   if (undefined === o) return o;
   if (typeof o !== "object") return o;
@@ -146,56 +149,6 @@ interface Dictionary<T> {
   [index: string]: T;
 }
 
-function addHandler(
-  switchName: string,
-  gatewayFile: string,
-  externalUri: string,
-  internalName: string
-) {
-  if ("--add" !== switchName) throw "invalid switch";
-  if (!gatewayFile)
-    throw `you must specify a target package.json files as the 1st argument`;
-  if (!externalUri)
-    throw "you must specify the external uri as the second argument";
-  if (!internalName)
-    throw "you must specify an internal identifier as the third argument";
-  if (!fs.existsSync(gatewayFile)) throw `file not found: ${gatewayFile}`;
-  const config = JSON.parse(fs.readFileSync(gatewayFile) + "") as IConfig;
-  const cache = (config["reverse-proxy-cache"] = config[
-    "reverse-proxy-cache"
-  ] || {
-    port: 3002,
-    verbose: false,
-    "reverse-proxy-db": "reverse-proxy.sqlite",
-  });
-  const pass = (cache["proxy-pass"] = cache["proxy-pass"] || []);
-  const baseUri = `/proxy/${internalName}`;
-  const originalBase = pass.find((p) => p.baseUri === baseUri);
-  const base = originalBase || {
-    about: "",
-    baseUri: "",
-    proxyUri: "",
-  };
-  base.baseUri = baseUri;
-  base.proxyUri = externalUri;
-  base.about = base.about || internalName;
-  if (!originalBase) pass.unshift(base);
-  pass.sort((a, b) => a.baseUri.localeCompare(b.baseUri));
-  pass.forEach((p) => (p.about = p.about || "this proxy is used to..."));
-  cache["proxy-pass"] = sort(cache["proxy-pass"]);
-  fs.writeFileSync(gatewayFile, JSON.stringify(config, null, 2));
-}
-
-function deleteHandler(
-  switchName: string,
-  gatewayFile: string,
-  fromCacheWhereResLike: string
-) {
-  if ("--delete" !== switchName) throw "invalid switch";
-  if (!gatewayFile)
-    throw `you must specify a target package.json files as the 1st argument`;
-}
-
 function initHandler(switchName: string, gatewayFile?: string) {
   if ("--init" !== switchName) throw "invalid switch";
   gatewayFile = gatewayFile || "package.json";
@@ -224,8 +177,11 @@ export async function run(args: string[] | IConfig) {
     if (primarySwitch?.startsWith("--")) {
       const handlerName = primarySwitch.substring(2);
       const handler = handlers[handlerName];
-      if (!handler) throw `no handler found for ${handlerName}`;
-      return handler(...args);
+      if (handler) {
+        return handler(...args);
+      }
+      const config = asConfig(args);
+      return new Server(config).start();
     } else {
       // default handler
       const gatewayFile = primarySwitch || "package.json";
