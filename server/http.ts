@@ -96,7 +96,7 @@ export class Http {
         if (true) {
           // Set to true if you need the website to include cookies
           res.setHeader("Access-Control-Allow-Credentials", "true");
-          res.setHeader("Access-Control-Allow-Methods", req.method);
+          res.setHeader("Access-Control-Allow-Methods", <string>req.method);
 
           // Website you wish to allow to connect
           res.setHeader("Access-Control-Allow-Origin", origin || host || "*");

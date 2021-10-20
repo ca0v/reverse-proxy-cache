@@ -29,15 +29,44 @@ Add a "reverse-proxy-cache" section to your package.json file
 interface IConfig {
   "reverse-proxy-cache": {
     "port": string;
+    verbose: boolean;
     "reverse-proxy-db": string;
     "proxy-pass": Array<{
       baseUri: string;
       proxyUri: string;
       "cache-processor": string;
+      "no-cache": true | "readonly" | "writeonly"
     }>
   }
 }
 ```
+
+### reverse-proxy-cache options
+
+| option           | description                                   |
+| ---------------- | --------------------------------------------- |
+| port             | proxy port                                    |
+| verbose          | verbose output (true or false)                |
+| reverse-proxy-db | identifies the sqlite file to use for caching |
+| proxy-pass       | list of resources to proxy                    |
+
+### proxy-pass options
+
+| option            | description                                         |
+| ----------------- | --------------------------------------------------- |
+| `baseUri`         | identifies the route to the cached service          |
+| `proxyUri`        | identifies the cached service                       |
+| `no-cache`        | true will not read from or write to the cache       |
+| `no-cache`        | readonly will not write to the cache                |
+| `no-cache`        | writeonly will not read from the cache              |
+| `cache-processor` | identifies pre-request and post-response processors |
+
+### cache-processor
+
+| cache-processor             | description                                          |
+| --------------------------- | ---------------------------------------------------- |
+| ignore-callback-querystring | ignore jsonp callback parameters computing cache key |
+| search-and-replace          | post-response processor for replacing content        |
 
 ## History
 
