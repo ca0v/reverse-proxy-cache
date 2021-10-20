@@ -122,7 +122,10 @@ export class Http {
     }
 
     if (true === proxyInfo.offline) {
-      throw "offline";
+      res.statusCode = 404;
+      res.statusMessage = "offline";
+      res.end();
+      return;
     }
 
     try {

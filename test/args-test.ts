@@ -1,6 +1,6 @@
 import { parseArgs } from "../parseArgs";
 import * as assert from "assert";
-import { asConfig } from "../asConfig";
+import { asConfig } from "../server/fun/asConfig";
 
 function parse(args: string) {
   return asConfig(args.split(" "));

@@ -1,9 +1,8 @@
-import { IConfig } from "./server/contracts";
+import { IConfig } from "../contracts";
 
 export function asConfig(args: string[]) {
   const config = <IConfig>{};
   config["reverse-proxy-cache"] = {
-    "proxy-pass": [],
     "reverse-proxy-db": "reverse-proxy-cache.sqlite",
     port: "3002",
     verbose: false,
@@ -15,6 +14,9 @@ export function asConfig(args: string[]) {
   while (argIndex < args.length) {
     const switchName = args[argIndex++];
     switch (switchName) {
+      case "--package":
+        config.packageFile = args[argIndex++];
+        break;
       case "":
         break;
       case "--db":

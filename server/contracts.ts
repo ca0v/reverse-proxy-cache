@@ -27,6 +27,7 @@ export interface IProcessor {
  * shape of the configuration (defaults to package.json)
  */
 export interface IConfig {
+  packageFile?: string;
   "reverse-proxy-cache": ReverseProxyCache;
 }
 
@@ -35,7 +36,7 @@ export interface ReverseProxyCache {
   port: string;
   verbose: boolean;
   "reverse-proxy-db": string;
-  "proxy-pass": Array<ProxyPass>;
+  "proxy-pass"?: Array<ProxyPass>;
 }
 
 export interface ProxyPass {

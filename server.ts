@@ -12,9 +12,10 @@ import * as url from "url";
 import { parseArgs } from "./parseArgs";
 import { DeleteSystemPlugin } from "./DeleteSystemPlugin";
 import { AddMockResponseSystemPlugin } from "./AddMockResponseSystemPlugin";
-import { addHandler } from "./addHandler";
-import { deleteHandler } from "./deleteHandler";
-import { asConfig } from "./asConfig";
+import { addHandler } from "./server/addHandler";
+import { deleteHandler } from "./server/deleteHandler";
+import { asConfig } from "./server/fun/asConfig";
+import { extend } from "./extend";
 
 export function sort(o: any): any {
   if (null === o) return o;
@@ -51,6 +52,8 @@ export class Server {
     if (!config["reverse-proxy-cache"]["proxy-pass"])
       throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
     this.config = config["reverse-proxy-cache"];
+
+    verbose(JSON.stringify(this.config, null, " "));
   }
 
   private verbose(...args: string[]) {
@@ -181,6 +184,17 @@ export async function run(args: string[] | IConfig) {
         return handler(...args);
       }
       const config = asConfig(args);
+      if (config.packageFile) {
+        const gatewayFile = config.packageFile;
+        if (!fs.existsSync(gatewayFile)) throw "file not found: " + gatewayFile;
+        const packageConfig = JSON.parse(
+          fs.readFileSync(gatewayFile) + ""
+        ) as IConfig;
+        extend(
+          config["reverse-proxy-cache"],
+          packageConfig["reverse-proxy-cache"]
+        );
+      }
       return new Server(config).start();
     } else {
       // default handler

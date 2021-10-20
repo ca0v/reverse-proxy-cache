@@ -26,9 +26,7 @@ export class Proxy {
       throw "proxy-pass not found in configuration";
     }
     // upsettingly non-performant but finds longest match
-    const matches = this.config["proxy-pass"].filter((v) =>
-      url.startsWith(v.baseUri)
-    );
+    const matches = proxyPass.filter((v) => url.startsWith(v.baseUri));
     matches.sort((a, b) => a.baseUri.length - b.baseUri.length);
     const match = <ProxyPass>matches.pop();
     if (!match) {
@@ -55,6 +53,7 @@ export class Proxy {
         url: actualUrl,
         key: cacheKey,
         processors: processors,
+        offline: this.config.offline,
         writeToCache: true,
         readFromCache: true,
         proxyPass: match,

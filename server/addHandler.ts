@@ -1,6 +1,6 @@
 import * as fs from "fs";
-import { IConfig } from "./server/contracts";
-import { sort } from "./server";
+import { IConfig } from "./contracts";
+import { sort } from "../server";
 
 export function addHandler(
   switchName: string,
