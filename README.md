@@ -17,7 +17,7 @@ Reverse Proxy with Caching to facilitate service oriented unit tests
 ## Cli
 
 - `npx reverse-proxy-cache --init`
-- `npx reverse-proxy-cache --readonly`
+- `npx reverse-proxy-cache --offline`
 - `npx reverse-proxy-cache --help`
 - `npx reverse-proxy-cache [package.json]`
 - `npx reverse-proxy-cache --add package.json https://www.arcgis.com arcgis`
