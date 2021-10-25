@@ -8,10 +8,6 @@
     "reverse-proxy-cache": "./bin/cli.js",
     "exitzero": "./bin/exitzero.js"
   },
-  "files": [
-    "./bin/noexit.js",
-    "./bin/cli.js"
-  ],
   "scripts": {
     "lint": "eslint ./built",
     "test": "mocha ./bin/test/test.js",
