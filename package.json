@@ -5,7 +5,8 @@
   "description": "gateway with caching to faciliate testing",
   "main": "./bin/cli.js",
   "bin": {
-    "reverse-proxy-cache": "./bin/cli.js"
+    "reverse-proxy-cache": "./bin/cli.js",
+    "exitzero": "./bin/exitzero.js"
   },
   "files": [
     "./bin/noexit.js",
