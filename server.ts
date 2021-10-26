@@ -1,34 +1,21 @@
 import * as fs from "fs";
 import * as http from "http";
-import { Db } from "./server/db";
+import * as url from "url";
+import { parseArgs } from "./parseArgs.js";
+import { Db } from "./server/db.js";
 import {
   IConfig,
   ReverseProxyCache as ReverseProxyCacheConfig,
-} from "./server/contracts";
-import { verbose as dump, verbose } from "./server/fun/stringify";
-import { Proxy } from "./server/proxy";
-import { Http } from "./server/http";
-import * as url from "url";
-import { parseArgs } from "./parseArgs";
-import { DeleteSystemPlugin } from "./DeleteSystemPlugin";
-import { AddMockResponseSystemPlugin } from "./AddMockResponseSystemPlugin";
-import { addHandler } from "./server/addHandler";
-import { deleteHandler } from "./server/deleteHandler";
-import { asConfig } from "./server/fun/asConfig";
-import { extend } from "./extend";
-
-export function sort(o: any): any {
-  if (null === o) return o;
-  if (undefined === o) return o;
-  if (typeof o !== "object") return o;
-  if (Array.isArray(o)) {
-    return o.map((item) => sort(item));
-  }
-  const keys = Object.keys(o).sort();
-  const result = <any>{};
-  keys.forEach((k) => (result[k] = sort(o[k])));
-  return result;
-}
+} from "./server/contracts.js";
+import { DeleteSystemPlugin } from "./server/plugins/DeleteSystemPlugin.js";
+import { AddMockResponseSystemPlugin } from "./server/plugins/AddMockResponseSystemPlugin.js";
+import { verbose as dump, verbose } from "./server/fun/stringify.js";
+import { Proxy } from "./server/proxy.js";
+import { Http } from "./server/http.js";
+import { addHandler } from "./server/addHandler.js";
+import { deleteHandler } from "./server/deleteHandler.js";
+import { asConfig } from "./server/fun/asConfig.js";
+import { extend } from "./server/fun/extend.js";
 
 export class Server {
   public cache: Db | null = null;

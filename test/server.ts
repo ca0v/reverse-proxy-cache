@@ -1,10 +1,10 @@
 import * as assert from "assert";
-import { run, Server as ProxyServer } from "../server";
+import { run, Server as ProxyServer } from "../server.js";
 
-import { EchoServer } from "./echo-server";
-import { verbose } from "../server/fun/stringify";
-import { HttpsGet } from "../server/fun/http-get";
-import { IConfig } from "@app/server/contracts";
+import { EchoServer } from "./echo-server.js";
+import { verbose } from "../server/fun/stringify.js";
+import { HttpsGet } from "../server/fun/http-get.js";
+import { IConfig } from "@app/server/contracts.js";
 
 const echoPort = 3003; // + Math.round(200 * Math.random());
 const proxyPort = echoPort + 1;

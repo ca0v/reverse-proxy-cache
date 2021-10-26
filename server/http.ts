@@ -4,11 +4,11 @@ import {
   ServerResponse,
   OutgoingHttpHeaders,
 } from "http";
-import { IDb } from "./db";
-import { stringify, unstringify, verbose } from "./fun/stringify";
-import { lowercase } from "./fun/lowercase";
-import { HttpsGet } from "./fun/http-get";
-import { ProxyInfo } from "./contracts";
+import { IDb } from "./db.js";
+import { stringify, unstringify, verbose } from "./fun/stringify.js";
+import { lowercase } from "./fun/lowercase.js";
+import { HttpsGet } from "./fun/http-get.js";
+import { ProxyInfo } from "./contracts.js";
 
 let got = new HttpsGet();
 

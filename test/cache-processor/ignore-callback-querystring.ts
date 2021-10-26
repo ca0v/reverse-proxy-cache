@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { processor } from "../../cache-processor/ignore-callback-querystring";
+import { processor } from "../../cache-processor/ignore-callback-querystring.js";
 
 describe("cache-processor/ignore-callback-querystring", () => {
   it("tests computeCacheKey", () => {

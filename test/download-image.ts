@@ -1,7 +1,7 @@
-import { HttpsGet } from "../server/fun/http-get";
-import * as assert from "assert";
-import { run, Server as ProxyServer } from "../server";
-import { IConfig } from "@app/server/contracts";
+import { HttpsGet } from "../server/fun/http-get.js";
+import { ok, equal } from "assert";
+import { run, Server as ProxyServer } from "../server.js";
+import { IConfig } from "@app/server/contracts.js";
 
 const got = new HttpsGet();
 const proxyPort = 3004;
@@ -39,14 +39,14 @@ describe("download-image tests", () => {
   it("downloads a picture through the proxy", async () => {
     let cacheUrl = `http://localhost:${proxyPort}/mock/test/MapIcons/AbandonedVehicle.png`;
     let response1 = await got.get(cacheUrl);
-    assert(
+    ok(
       [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every(
         (v, i) => v === response1.body[i]
       ),
       "PNG header is correct"
     );
 
-    assert.equal(
+    equal(
       response1.body.length,
       4580,
       "cache response size matches actual size"

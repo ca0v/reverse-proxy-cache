@@ -2,9 +2,9 @@ import * as IHttp from "http";
 import * as http from "http";
 import * as https from "https";
 
-import { verbose } from "./stringify";
-import { isBinaryMimeType } from "./isBinaryMimeType";
-import { bufferToString } from "./bufferToString";
+import { verbose } from "./stringify.js";
+import { isBinaryMimeType } from "./isBinaryMimeType.js";
+import { bufferToString } from "./bufferToString.js";
 
 export class HttpsGet {
   get(url: string, options?: https.RequestOptions) {

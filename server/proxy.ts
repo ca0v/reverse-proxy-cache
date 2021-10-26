@@ -1,18 +1,18 @@
-import { processor as searchAndReplace } from "../cache-processor/search-and-replace";
-import { processor as ignoreCallback } from "../cache-processor/ignore-callback-querystring";
+import { processor as searchAndReplace } from "../cache-processor/search-and-replace.js";
+import { processor as ignoreCallback } from "../cache-processor/ignore-callback-querystring.js";
 
 const CacheProcessors = {
   "search-and-replace": searchAndReplace,
   "ignore-callback-querystring": ignoreCallback,
 };
 
-import {
+import type {
   ReverseProxyCache,
   ProxyInfo,
   IProcessor,
   ProxyPass,
-} from "./contracts";
-import { verbose } from "./fun/stringify";
+} from "./contracts.js";
+import { verbose } from "./fun/stringify.js";
 
 export class Proxy {
   constructor(private config: ReverseProxyCache) {

@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { processor } from "../../cache-processor/search-and-replace";
+import { processor } from "../../cache-processor/search-and-replace.js";
 
 describe("cache-processor/search-and-replace", () => {
   it("tests processResponse", () => {

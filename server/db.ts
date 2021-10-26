@@ -1,6 +1,10 @@
-import * as sqlite3 from "sqlite3";
-import { verbose } from "./fun/stringify";
-import { ReverseProxyCache } from "./contracts";
+import * as sqlite from "sqlite3";
+import { verbose } from "./fun/stringify.js";
+import { ReverseProxyCache } from "./contracts.js";
+
+const sqlite3 = <any>(<any>sqlite).default;
+
+verbose("sqlite3", sqlite3);
 
 export interface IDb {
   exists(url: string): Promise<string | null>;
@@ -8,11 +12,12 @@ export interface IDb {
 }
 
 export class Db implements IDb {
-  private db: sqlite3.Database;
+  private db: any; //sqlite3.Database;
 
   private constructor(config: ReverseProxyCache) {
     let dbFile = config["reverse-proxy-db"];
     config.verbose && verbose(`loading ${dbFile}`);
+
     this.db = new sqlite3.Database(
       dbFile,
       sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE
@@ -31,7 +36,7 @@ export class Db implements IDb {
         () => {
           resolve(result);
         },
-        (err) => {
+        (err: Error | null) => {
           if ("" + err !== "Error: SQLITE_ERROR: table cache already exists")
             reject(err);
           resolve(result);
@@ -43,7 +48,7 @@ export class Db implements IDb {
   async exists(url: string) {
     let cmd = this.db.prepare("SELECT res FROM cache WHERE url=?");
     let p = new Promise<string | null>((resolve, reject) => {
-      cmd.get(url, (err, row) => {
+      cmd.get(url, (err: Error | null, row: any) => {
         err ? reject(err) : resolve(row && row.res);
         verbose(row ? "hit" : "miss");
       });

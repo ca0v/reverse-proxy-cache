@@ -1,9 +1,8 @@
-import type { IConfig } from "../../server/contracts";
-import { run, Server as ProxyServer } from "../../server";
+import type { IConfig } from "../../server/contracts.js";
+import { run, Server as ProxyServer } from "../../server.js";
 import * as assert from "assert";
-import { HttpsGet } from "../../server/fun/http-get";
-import { verbose } from "../../server/fun/stringify";
-import * as querystring from "querystring";
+import { HttpsGet } from "../../server/fun/http-get.js";
+import { verbose } from "../../server/fun/stringify.js";
 
 describe("hits the /system endpoint", () => {
   const got = new HttpsGet();

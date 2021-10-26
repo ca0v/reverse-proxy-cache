@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import * as url from "url";
-import { Server } from "./server";
+import type { Server } from "../../server.js";
 
 export class DeleteSystemPlugin {
   constructor(private server: Server) {}

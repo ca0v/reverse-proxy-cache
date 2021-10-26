@@ -1,9 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import * as url from "url";
-import { Server } from "./server";
-import { stringify, verbose as dump, verbose } from "./server/fun/stringify";
-import { parse } from "querystring";
-import { lowercase } from "./server/fun/lowercase";
+import type { Server } from "../../server.js";
+import { stringify, verbose as dump, verbose } from "../fun/stringify.js";
+import { lowercase } from "../fun/lowercase.js";
 
 function asStatus(message: string) {
   return JSON.stringify({ status: message });

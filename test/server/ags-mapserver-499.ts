@@ -2,15 +2,16 @@ import * as assert from "assert";
 import * as http from "http";
 import * as https from "https";
 import * as querystring from "querystring";
-import { HttpsGet } from "../../server/fun/http-get";
-import { run, Server as ProxyServer } from "../../server";
-import { IConfig } from "@app/server/contracts";
+import { HttpsGet } from "../../server/fun/http-get.js";
+import { run, Server as ProxyServer } from "../../server.js";
+import { IConfig } from "@app/server/contracts.js";
 
 describe("agol raw post", () => {
   it("access https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer via hosted server (POST)", async () => {
     const got = new HttpsGet();
     const cacheUrl = `https://services7.arcgis.com/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer`;
 
+    // TODO: use URLSearchParams instead
     const data = querystring.stringify({
       f: "json",
       token: "abc",
@@ -45,8 +46,7 @@ describe("agol raw post", () => {
         host: "services7.arcgis.com",
         port: 443,
         method: "POST",
-        path:
-          "/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
+        path: "/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           "Content-Length": data.length,
@@ -70,11 +70,12 @@ describe("agol raw post", () => {
     req.on("error", (err) => {
       console.log("error", err);
     });
+
     req.on("drain", () => {
       console.log("drain", response);
     });
 
-    req.write(data, <any>"application/json", (err) => {
+    req.write(data, "utf-8", (err) => {
       console.log("error", err);
     });
 
