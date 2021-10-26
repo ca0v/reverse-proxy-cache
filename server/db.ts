@@ -2,9 +2,8 @@ import * as sqlite from "sqlite3";
 import { verbose } from "./fun/stringify.js";
 import { ReverseProxyCache } from "./contracts.js";
 
-const sqlite3 = <any>(<any>sqlite).default;
-
-verbose("sqlite3", sqlite3);
+let sqlite3 = sqlite;
+sqlite3 = (<any>sqlite).default;
 
 export interface IDb {
   exists(url: string): Promise<string | null>;
