@@ -1,6 +1,6 @@
 import * as node_http from "http";
 import * as assert from "assert";
-import { Http } from "../../server/Http.js";
+import { Http } from "../../server/http.js";
 import { IDb } from "@app/server/db.js";
 import { EchoServer } from "../echo-server.js";
 import * as querystring from "querystring";
