@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-var exec = require("child_process").exec;
+import { exec } from "child_process";
 
-var cmd = process.argv.slice(2).join(" ");
+const cmd = process.argv.slice(2).join(" ");
 
-var child = exec(cmd, {
+const child = exec(cmd, {
   cwd: process.cwd(),
   env: process.env,
 });

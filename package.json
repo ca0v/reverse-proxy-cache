@@ -6,7 +6,7 @@
   "main": "./bin/cli.js",
   "bin": {
     "reverse-proxy-cache": "./bin/cli.js",
-    "exitzero": "./bin/exitzero.mjs"
+    "exitzero": "./bin/exitzero.js"
   },
   "scripts": {
     "lint": "eslint ./built",
@@ -19,7 +19,7 @@
     "dev": "npm-run-all -p watch:build watch:test",
     "build": "tsc",
     "deploy": "tsc -p tsconfig-deploy.json",
-    "install": "node ./bin/exitzero.mjs npm run deploy",
+    "install": "node ./bin/exitzero.js npm run deploy",
     "format": "npm run server -- --init"
   },
   "keywords": [],
