@@ -16,6 +16,7 @@ import { addHandler } from "./server/addHandler.js";
 import { deleteHandler } from "./server/deleteHandler.js";
 import { asConfig } from "./server/fun/asConfig.js";
 import { extend } from "./server/fun/extend.js";
+import { ShutdownSystemPlugin } from "./server/plugins/ShutdownSystemPlugin.js";
 
 export class Server {
   public cache: Db | null = null;
@@ -27,6 +28,7 @@ export class Server {
   private systemPlugins = [
     new DeleteSystemPlugin(this),
     new AddMockResponseSystemPlugin(this),
+    new ShutdownSystemPlugin(this),
   ];
 
   constructor(config: IConfig) {

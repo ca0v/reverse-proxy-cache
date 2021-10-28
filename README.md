@@ -74,16 +74,31 @@ interface IConfig {
 
 ## History
 
-- v1.0.6 - additional caching strategies, see https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/
-- v1.0.5 - organize code using patterns from popular node projects
+- future
+  - additional caching strategies, see https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/
+  - organize code using patterns from popular node projects
+- v1.0.7
+  - adds `/system?shutdown` to shutdown server
+- v1.0.6
+  - adds `--offline` command
+  - adds ability to inject mock data
+- v1.0.5
   - adds ability to write a mock
   - allows CORS
-- v1.0.4 - adds system service for deleting by statuscode (e.g. /system/delete=302)
-- v1.0.2 - adds --init and --add commands
-- v1.0.1 - adds support for DELETE OPTIONS, POST, PUT
-- v1.0.0 - supports GET only
+- v1.0.4
+  - adds system service for deleting by statuscode (e.g. /system?delete=302)
+- v1.0.2
+  - adds `--init` and `--add` commands
+- v1.0.1
+  - adds support for DELETE OPTIONS, POST, PUT
+- v1.0.0
+  - supports GET only
 
 ## Documentation
+
+### Shutdown (v1.0.7)
+
+Issue a GET request to /system?shutdown
 
 ### Inject mock data (v1.0.5)
 

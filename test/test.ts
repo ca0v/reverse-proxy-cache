@@ -10,4 +10,5 @@ import "./cache-processor/ignore-callback-querystring.js";
 import "./cache-processor/search-and-replace.js";
 import "./server.js";
 import "./server/ags-mapserver-499.js";
+import "./server/shutdown-command.js";
 import "./download-image.js";
