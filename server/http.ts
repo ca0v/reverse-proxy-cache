@@ -9,6 +9,7 @@ import { stringify, unstringify, verbose } from "./fun/stringify.js";
 import { lowercase } from "./fun/lowercase.js";
 import { HttpsGet } from "./fun/http-get.js";
 import { ProxyInfo } from "./contracts.js";
+import { setHeaders } from "./setHeaders.js";
 
 let got = new HttpsGet();
 
@@ -20,7 +21,7 @@ function asBody(data: string | Array<number>) {
 }
 
 export class Http {
-  constructor(private cache: IDb) {}
+  constructor(private cache: IDb) { }
 
   public async invokeDelete(
     url: ProxyInfo,
@@ -93,20 +94,16 @@ export class Http {
 
         verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
         verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
-        if (true) {
-          // Set to true if you need the website to include cookies
-          res.setHeader("Access-Control-Allow-Credentials", "true");
-          res.setHeader("Access-Control-Allow-Methods", <string>req.method);
 
-          // Website you wish to allow to connect
-          res.setHeader("Access-Control-Allow-Origin", origin || host || "*");
+        setHeaders(resultHeaders, {
+          "Content-Type": (<string>res.getHeader("content-type")) || "text",
+          "Access-Control-Allow-Credentials": "true",
+          "Access-Control-Allow-Origin": origin || host || "localhost",
+          "Access-Control-Allow-Methods": req.method || "GET,OPTIONS",
+          "Access-Control-Allow-Headers":
+            "X-Requested-With,content-type,Access-Control-Allow-Origin,Access-Control-Allow-Credentials,Access-Control-Allow-Methods"
+        });
 
-          // Request headers you wish to allow
-          res.setHeader(
-            "Access-Control-Allow-Headers",
-            "X-Requested-With,content-type"
-          );
-        }
         res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
 
         const originalBody = result.body;
@@ -147,15 +144,16 @@ export class Http {
       let resultHeaders = lowercase(result.headers);
       verbose(`inbound response headers: ${JSON.stringify(resultHeaders)}`);
 
-      let outboundHeader: IncomingHttpHeaders = {
+      let outboundHeader: IncomingHttpHeaders = {};
+      setHeaders(outboundHeader, {
         "Access-Control-Allow-Credentials": "true",
-        "access-control-allow-origin": origin || "*",
-        "access-control-allow-methods": req.method,
-        "access-control-allow-headers":
-          resultHeaders["access-control-allow-headers"] || "*",
-        "content-type":
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Methods": req.method || "GET",
+        "Access-Control-Allow-Headers":
+          resultHeaders["access-control-allow-headers"] || "",
+        "Content-Type":
           resultHeaders["content-type"] || "reverse-proxy/unknown",
-      };
+      });
 
       verbose(
         `outbound response headers: ${JSON.stringify(
@@ -249,6 +247,23 @@ export class Http {
                   headers: OutgoingHttpHeaders;
                   body: string;
                 };
+
+                // the value.headers are probably stale, should probably attempt to heal them
+                setHeaders(value.headers, {
+                  "Content-Type": <string>(value.headers["content-type"]) || "",
+                  "Access-Control-Allow-Credentials": "true",
+                  "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
+                  "Access-Control-Allow-Methods": req.method || "OPTIONS,POST",
+                  "Access-Control-Allow-Headers": ""
+                });
+
+                verbose(
+                  `outbound response headers: ${JSON.stringify(
+                    value.headers,
+                    null,
+                    " "
+                  )}`
+                );
                 res.writeHead(
                   value.statusCode || 200,
                   value.statusMessage,
@@ -313,3 +328,4 @@ export class Http {
     });
   }
 }
+

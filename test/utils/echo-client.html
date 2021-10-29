@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <textarea id="logarea"></textarea>
+  </head>
+  <style>
+    body {
+      background: black;
+      color: white;
+    }
+    #logarea {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      height: 50%;
+      width: 50%;
+      max-width: 40em;
+      max-height: 40em;
+      overflow: hidden;
+      color: rgb(20, 200, 20);
+      border: 1em white;
+      border-style: ridge;
+      padding: 1em;
+      margin: 1em;
+    }
+  </style>
+  <body>
+    <script type="module">
+      async function ping(body = "") {
+        const method = !!body ? "POST" : "GET";
+        const info = {
+          method: method,
+          credentials: "include",
+          mode: "cors",
+        };
+        if (body) info.body = body;
+        try {
+          const response = await fetch("http://127.0.0.1:3002/mock/echo", info);
+          const bodyText = await response.text();
+          log(`${method}: ${bodyText}`);
+        } catch (ex) {
+          log(ex);
+        }
+      }
+
+      function log(message) {
+        const logArea = document.getElementById("logarea");
+        const now = new Date().toLocaleTimeString();
+        logArea.value = `${now}: ${message}\n${logArea.value}`;
+      }
+
+      setInterval(() => ping("test1"), 1000);
+      setInterval(() => ping(), 1000);
+    </script>
+  </body>
+</html>

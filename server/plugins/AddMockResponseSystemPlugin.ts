@@ -9,7 +9,7 @@ function asStatus(message: string) {
 }
 
 export class AddMockResponseSystemPlugin {
-  constructor(private server: Server) {}
+  constructor(private server: Server) { }
 
   process(req: IncomingMessage, res: ServerResponse) {
     if (req.method !== "POST") {
@@ -21,6 +21,13 @@ export class AddMockResponseSystemPlugin {
       dump("add mock expects a 'mock' query", req.url, query);
       return false;
     }
+
+    verbose("AddMockResponseSystemPlugin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      req.headers.origin || "POST"
+    );
 
     switch (query.mock) {
       case "add":

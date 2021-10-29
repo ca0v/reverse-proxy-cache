@@ -120,14 +120,6 @@ export class Server {
     const pluginFound =
       this.systemPlugins?.some((p) => p.process(req, res)) || false;
     this.verbose(JSON.stringify({ pluginFound, url: req.url }));
-    if (pluginFound) {
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader(
-        "access-control-allow-origin",
-        <any>req.headers.origin || "*"
-      );
-      res.setHeader("access-control-allow-methods", req.method || "*");
-    }
     return pluginFound;
   }
 

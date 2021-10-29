@@ -1,3 +1,4 @@
+import { setHeaders } from "@app/server/setHeaders.js";
 import * as http from "http";
 import { verbose } from "../server/fun/stringify.js";
 
@@ -8,12 +9,19 @@ export class EchoServer {
     private options: {
       port: number;
     }
-  ) {}
+  ) { }
 
   start() {
     if (!this.server) {
       this.server = http.createServer(async (req, res) => {
-        res.setHeader("content-type", "echo/text");
+        const origin: string = req.headers.origin || req.headers.referer || "localhost";
+        setHeaders(res.getHeaders(), {
+          "Content-Type": (<string>req.headers["content-type"]) || "text; charset=UTF-8",
+          "Access-Control-Allow-Origin": origin,
+          "Access-Control-Allow-Credentials": "true",
+          "Access-Control-Allow-Methods": req.method || "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "",
+        });
 
         let ended = false;
         res.write("echo(");
