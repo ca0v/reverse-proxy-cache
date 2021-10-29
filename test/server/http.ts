@@ -1,7 +1,7 @@
 import * as node_http from "http";
 import * as assert from "assert";
 import { Http } from "../../server/http.js";
-import { IDb } from "@app/server/db.js";
+import { IDb } from "#@app/server/db.js";
 import { EchoServer } from "../echo-server.js";
 import * as querystring from "querystring";
 
@@ -59,7 +59,7 @@ describe("tests http", () => {
   it("tests invoke", (done) => {
     let db: IDb = {
       exists: (url: string) => promisify(url),
-      add: (url: string, res: string) => {},
+      add: (url: string, res: string) => { },
     };
 
     let http = new Http(db);

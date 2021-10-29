@@ -1,4 +1,4 @@
-import { ProxyInfo, IProcessor } from "@app/server/contracts";
+import { ProxyInfo, IProcessor } from "#@app/server/contracts";
 
 class Processor implements IProcessor {
   name = "ignore-callback-querystring";

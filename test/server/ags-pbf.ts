@@ -6,7 +6,7 @@
 import * as assert from "assert";
 import { HttpsGet } from "../../server/fun/http-get.js";
 import { run, Server as ProxyServer } from "../../server.js";
-import { IConfig } from "@app/server/contracts.js";
+import { IConfig } from "#@app/server/contracts.js";
 import { readFileSync } from "fs";
 import { normalize } from "path";
 

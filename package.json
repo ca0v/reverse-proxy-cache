@@ -8,6 +8,9 @@
     "reverse-proxy-cache": "./bin/cli.js",
     "exitzero": "./bin/exitzero.js"
   },
+  "imports": {
+    "#@app/*": "./bin/*"
+  },
   "scripts": {
     "lint": "eslint ./built",
     "test": "mocha ./bin/test/test.js",

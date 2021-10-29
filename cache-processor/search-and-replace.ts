@@ -4,7 +4,7 @@ url to the resulting image.
 https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export
  */
 
-import { ProxyInfo, IProcessor, ProxyPass } from "@app/server/contracts";
+import { ProxyInfo, IProcessor, ProxyPass } from "#@app/server/contracts";
 
 class Processor implements IProcessor {
   name = "search-and-replace";

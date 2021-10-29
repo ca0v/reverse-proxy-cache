@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import { Proxy } from "../../server/proxy.js";
-import { ReverseProxyCache } from "@app/server/contracts.js";
+import { ReverseProxyCache } from "#@app/server/contracts.js";
 
 describe("tests proxy", () => {
   it("tests proxy", () => {

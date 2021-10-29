@@ -1,4 +1,4 @@
-import { setHeaders } from "@app/server/setHeaders.js";
+import { setHeaders } from "#@app/server/setHeaders.js";
 import * as http from "http";
 import { verbose } from "../server/fun/stringify.js";
 
