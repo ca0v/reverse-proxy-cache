@@ -24,12 +24,12 @@ export class AddMockResponseSystemPlugin {
     }
 
     verbose("AddMockResponseSystemPlugin");
-    setHeaders(res.getHeaders(), {
-      "Content-Type": <string>req.headers["content-type"],
+    setHeaders(res, {
+      "Content-Type": req.headers["content-type"] || "add-mock/unknown",
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "",
       "Access-Control-Allow-Methods": "POST",
-      "Access-Control-Allow-Origin": <string>req.headers.origin,
+      "Access-Control-Allow-Origin": <string>(req.headers.origin || req.headers.referer || "localhost"),
     });
 
     switch (query.mock) {

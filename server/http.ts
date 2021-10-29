@@ -10,6 +10,7 @@ import { lowercase } from "./fun/lowercase.js";
 import { HttpsGet } from "./fun/http-get.js";
 import { ProxyInfo } from "./contracts.js";
 import { setHeaders } from "./setHeaders.js";
+import { dumpHeaders } from "#@app/test/dumpHeaders.js";
 
 let got = new HttpsGet();
 
@@ -96,9 +97,9 @@ export class Http {
         verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
 
         setHeaders(resultHeaders, {
-          "Content-Type": (<string>res.getHeader("content-type")) || "text",
+          "Content-Type": (<string>resultHeaders["content-type"]) || "text",
           "Access-Control-Allow-Credentials": "true",
-          "Access-Control-Allow-Origin": origin || host || "localhost",
+          "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
           "Access-Control-Allow-Methods": req.method || "GET,OPTIONS",
           "Access-Control-Allow-Headers":
             "X-Requested-With,content-type,Access-Control-Allow-Origin,Access-Control-Allow-Credentials,Access-Control-Allow-Methods"
@@ -142,12 +143,14 @@ export class Http {
       });
 
       let resultHeaders = lowercase(result.headers);
-      verbose(`inbound response headers: ${JSON.stringify(resultHeaders)}`);
+
+      verbose(`inbound response headers`);
+      dumpHeaders(resultHeaders);
 
       let outboundHeader: IncomingHttpHeaders = {};
       setHeaders(outboundHeader, {
         "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
         "Access-Control-Allow-Methods": req.method || "GET",
         "Access-Control-Allow-Headers":
           resultHeaders["access-control-allow-headers"] || "",

@@ -1,7 +1,9 @@
+import { dumpHeaders } from "#@app/test/dumpHeaders.js";
 import type { IncomingMessage, ServerResponse } from "http";
 import * as url from "url";
 import type { Server } from "../../server.js";
 import { verbose } from "../fun/stringify.js";
+import { setHeaders } from "../setHeaders.js";
 
 export class DeleteSystemPlugin {
   constructor(private server: Server) { }
@@ -12,11 +14,15 @@ export class DeleteSystemPlugin {
     if (!query.delete) return false;
 
     verbose("DeleteSystemPlugin");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      req.headers.origin || "DELETE"
-    );
+    setHeaders(res, {
+      "Content-Type": "application/text",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Methods": "DELETE",
+      "Access-Control-Allow-Headers": "",
+      "Access-Control-Allow-Origin": <string>(req.headers.origin || req.headers.referer || "localhost"),
+    });
+    dumpHeaders(res.getHeaders());
+
     const cache = this.server.cache;
     cache!
       .delete(<string>query.delete)

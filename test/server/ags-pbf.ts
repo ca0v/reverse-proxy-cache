@@ -49,11 +49,13 @@ describe("http get a pbf into cache", () => {
     const [x, y, z] = [0, 0, 0];
     const cacheUrl = `http://localhost:3004/mock/arcgis/rest/services/Feature_Service_Test/VectorTileServer/tile/${z}/${y}/${x}.pbf?v=1`;
     const response1 = await got.get(cacheUrl);
+    assert.strictEqual(response1.headers["content-type"], "binary/octet-stream", "pbf content type");
     assert.strictEqual(response1.statusCode, 200, "statusCode");
     const body = response1.body;
     assert.strictEqual(body.length, tile000.length, "body length");
+    console.log("body", body);
     for (let i = 0; i < tile000.length; i++) {
-      assert.strictEqual(body[i], tile000[i], `tile[${i}]`);
+      assert.strictEqual(body[i], tile000[i], `tile[${i}]=${tile000[i]} != ${body[i]}`);
     }
   });
 });
