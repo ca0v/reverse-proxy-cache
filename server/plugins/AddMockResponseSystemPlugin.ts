@@ -3,6 +3,7 @@ import * as url from "url";
 import type { Server } from "../../server.js";
 import { stringify, verbose as dump, verbose } from "../fun/stringify.js";
 import { lowercase } from "../fun/lowercase.js";
+import { setHeaders } from "../setHeaders.js";
 
 function asStatus(message: string) {
   return JSON.stringify({ status: message });
@@ -23,11 +24,13 @@ export class AddMockResponseSystemPlugin {
     }
 
     verbose("AddMockResponseSystemPlugin");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      req.headers.origin || "POST"
-    );
+    setHeaders(res.getHeaders(), {
+      "Content-Type": <string>req.headers["content-type"],
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Headers": "",
+      "Access-Control-Allow-Methods": "POST",
+      "Access-Control-Allow-Origin": <string>req.headers.origin,
+    });
 
     switch (query.mock) {
       case "add":
