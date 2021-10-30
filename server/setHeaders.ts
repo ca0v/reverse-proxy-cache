@@ -13,14 +13,14 @@ export function setHeaders(value: ServerResponse | IncomingHttpHeaders | Outgoin
         const target = <ServerResponse>value;
         Object.entries(headers).forEach(([k, v]) => {
             verbose(`setHeader("${k}", "${v}")`);
-            target.setHeader(k, v);
+            target.setHeader(k.toLocaleLowerCase(), v);
         });
 
     } else {
         const target = <IncomingHttpHeaders>value;
         Object.entries(headers).forEach(([k, v]) => {
             verbose(`setting header: ${k} = ${v}`);
-            target[k] = v;
+            target[k.toLocaleLowerCase()] = v;
         });
     }
 }

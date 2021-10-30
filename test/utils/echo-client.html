@@ -44,6 +44,7 @@
       }
 
       function log(message) {
+        console.log(message);
         const logArea = document.getElementById("logarea");
         const now = new Date().toLocaleTimeString();
         logArea.value = `${now}: ${message}\n${logArea.value}`;
@@ -51,21 +52,27 @@
 
       async function get(url) {
         try {
-          const response = await fetch(
-            "http://localhost:3002/mock/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
-            { method: "GET", mode: "cors", credentials: "omit" }
-          );
-          const bodyText = await response.text();
-          log(`${method}: ${bodyText}`);
+          const response = await fetch(url, {
+            method: "GET",
+            mode: "cors",
+            credentials: "omit",
+          });
+          const bodyText = await response.json();
+          log(`${url}:\n${JSON.stringify(bodyText, null, " ")}`);
         } catch (ex) {
           log(ex);
         }
       }
 
-      await get();
-      setInterval(() => get(), 10000);
-      // setInterval(() => ping("test1"), 1000);
-      // setInterval(() => ping(), 1000);
+      setInterval(
+        () =>
+          get(
+            "http://localhost:3002/mock/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin"
+          ),
+        10000
+      );
+      setInterval(() => ping("test1"), 1000);
+      setInterval(() => ping(), 10000);
     </script>
   </body>
 </html>

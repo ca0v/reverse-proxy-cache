@@ -105,7 +105,7 @@ export class Http {
         dumpHeaders(resultHeaders);
         verbose("\n\n\n");
 
-        resultHeaders["Access-Control-Allow-Origin"] = "*";
+        delete resultHeaders["content-length"];
         res.writeHead(result.statusCode, resultHeaders);
 
         const originalBody = result.body;
