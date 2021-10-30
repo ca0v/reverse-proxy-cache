@@ -88,7 +88,8 @@ export class Server {
             helper.invokePut(proxyurl, req, res);
             break;
           default:
-            res.writeHead(500, `unsupported method: ${req.method}`, {
+            res.statusMessage = `unsupported method: ${req.method}`;
+            res.writeHead(500, {
               "content-type": "text/plain",
             });
             res.end();
@@ -99,7 +100,8 @@ export class Server {
           `${req.method} request failed for ${proxyurl}:\n`,
           ex + ""
         );
-        res.writeHead(500, `${(ex + "").substring(0, 16)}`, {
+        res.statusMessage = `${(ex + "").substring(0, 16)}`;
+        res.writeHead(500, {
           "content-type": "text/plain",
           body: ex + "",
         });

@@ -49,8 +49,23 @@
         logArea.value = `${now}: ${message}\n${logArea.value}`;
       }
 
-      setInterval(() => ping("test1"), 1000);
-      setInterval(() => ping(), 1000);
+      async function get(url) {
+        try {
+          const response = await fetch(
+            "http://localhost:3002/mock/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
+            { method: "GET", mode: "cors", credentials: "omit" }
+          );
+          const bodyText = await response.text();
+          log(`${method}: ${bodyText}`);
+        } catch (ex) {
+          log(ex);
+        }
+      }
+
+      await get();
+      setInterval(() => get(), 10000);
+      // setInterval(() => ping("test1"), 1000);
+      // setInterval(() => ping(), 1000);
     </script>
   </body>
 </html>

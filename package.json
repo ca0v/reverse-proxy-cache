@@ -13,7 +13,7 @@
   },
   "scripts": {
     "lint": "eslint ./built",
-    "test": "mocha ./bin/test/test.js",
+    "test": "mocha ./bin/test/test.js -b",
     "debug:test": "npm run test -- --inspect-brk",
     "server": "node ./bin/cli.js --package reverse-proxy-config.json",
     "debug:server": "node --inspect ./bin/cli.js",

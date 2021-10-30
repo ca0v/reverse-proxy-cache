@@ -12,15 +12,15 @@ export function setHeaders(value: ServerResponse | IncomingHttpHeaders | Outgoin
     if (value.setHeader) {
         const target = <ServerResponse>value;
         Object.entries(headers).forEach(([k, v]) => {
-            verbose("setting header:", k, v);
+            verbose(`setHeader("${k}", "${v}")`);
             target.setHeader(k, v);
         });
 
     } else {
         const target = <IncomingHttpHeaders>value;
         Object.entries(headers).forEach(([k, v]) => {
-            verbose("setting header:", k, v);
-            target[k.toLocaleLowerCase()] = v;
+            verbose(`setting header: ${k} = ${v}`);
+            target[k] = v;
         });
     }
 }

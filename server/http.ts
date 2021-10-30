@@ -72,10 +72,8 @@ export class Http {
     });
 
     let requestHeaders = lowercase(req.headers);
-    verbose(`inbound request headers: ${JSON.stringify(requestHeaders)}`);
-
-    let origin = <string>requestHeaders.origin;
-    let host = <string>requestHeaders.host;
+    verbose(`inbound request headers`);
+    dumpHeaders(requestHeaders);
 
     if (proxyInfo.readFromCache) {
       let cachedata = await this.cache.exists(cacheKey);
@@ -89,23 +87,26 @@ export class Http {
 
         const resultHeaders = <OutgoingHttpHeaders>lowercase(result.headers);
 
-        // it is not encoded as it may have been originally
-        delete resultHeaders["content-encoding"];
-        delete resultHeaders["content-length"];
+        verbose(`request headers`);
+        dumpHeaders(requestHeaders);
 
-        verbose(`request headers:\n${JSON.stringify(requestHeaders)}`);
-        verbose(`response headers:\n${JSON.stringify(resultHeaders)}`);
+        verbose(`cached response headers`);
+        dumpHeaders(resultHeaders);
 
         setHeaders(resultHeaders, {
           "Content-Type": (<string>resultHeaders["content-type"]) || "text",
           "Access-Control-Allow-Credentials": "true",
           "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
-          "Access-Control-Allow-Methods": req.method || "GET,OPTIONS",
-          "Access-Control-Allow-Headers":
-            "X-Requested-With,content-type,Access-Control-Allow-Origin,Access-Control-Allow-Credentials,Access-Control-Allow-Methods"
+          "Access-Control-Allow-Methods": <string>req.method,
+          "Access-Control-Allow-Headers": "Content-Type,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Credentials"
         });
 
-        res.writeHead(result.statusCode, result.statusMessage, resultHeaders);
+        verbose("\n\n\n");
+        dumpHeaders(resultHeaders);
+        verbose("\n\n\n");
+
+        resultHeaders["Access-Control-Allow-Origin"] = "*";
+        res.writeHead(result.statusCode, resultHeaders);
 
         const originalBody = result.body;
         const processedBody = this.runProcessors(proxyInfo, originalBody);
@@ -267,9 +268,10 @@ export class Http {
                     " "
                   )}`
                 );
+
+                res.statusMessage = value.statusMessage;
                 res.writeHead(
                   value.statusCode || 200,
-                  value.statusMessage,
                   value.headers
                 );
 
@@ -298,11 +300,8 @@ export class Http {
             });
 
             let valueHeaders = lowercase(value.headers);
-            res.writeHead(
-              value.statusCode || 200,
-              value.statusMessage,
-              valueHeaders
-            );
+            res.statusMessage = value.statusMessage;
+            res.writeHead(value.statusCode || 200, valueHeaders);
 
             value.body = this.runProcessors(url, value.body) as string;
             res.write(value.body);
