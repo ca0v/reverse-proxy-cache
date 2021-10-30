@@ -56,6 +56,7 @@ describe("hits the /system endpoint", () => {
         }),
       }
     );
+    verbose("response1", response1.body);
 
     assert.strictEqual(
       response1.statusCode,
@@ -66,8 +67,8 @@ describe("hits the /system endpoint", () => {
     const response2 = await got.get(
       `http://localhost:${proxyPort}/mock/test/MapIcons/README.md`
     );
+    verbose("response2", response2.body);
 
-    verbose("RESPONSE BODY", response2.body);
     assert.strictEqual(response2.body, mockData, "the mock data was written");
   });
 

@@ -5,6 +5,7 @@ import * as https from "https";
 import { verbose } from "./stringify.js";
 import { isBinaryMimeType } from "./isBinaryMimeType.js";
 import { bufferToString } from "./bufferToString.js";
+import { getHeader } from "../setHeaders.js";
 
 export class HttpsGet {
   get(url: string, options?: https.RequestOptions) {
@@ -22,7 +23,7 @@ export class HttpsGet {
     }>((good, bad) => {
       const req = protocol
         .request(urlOptions, requestOptions, (res) => {
-          const mimeType = res.headers["content-type"] || "text/plain";
+          const mimeType = getHeader(res.headers, "Content-Type", "text/plain");
           const isBinary = isBinaryMimeType(mimeType);
           verbose({ mimeType, isBinary });
 
