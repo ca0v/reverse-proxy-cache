@@ -12,7 +12,7 @@ Reverse Proxy with Caching to facilitate service oriented unit tests
 
 ## Install
 
-- `npm install https://github.com/ca0v/reverse-proxy-cache/tarball/v1.0.6`
+- `npm install https://github.com/ca0v/reverse-proxy-cache/tarball/v1.0.7`
 
 ## Cli
 

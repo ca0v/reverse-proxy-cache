@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "reverse-proxy-cache",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "gateway with caching to faciliate testing",
   "main": "./bin/cli.js",
   "bin": {
