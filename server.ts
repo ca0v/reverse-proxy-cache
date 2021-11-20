@@ -3,8 +3,9 @@ import * as http from "http";
 import * as url from "url";
 import { parseArgs } from "./parseArgs.js";
 import { Db } from "./server/db.js";
-import {
+import type {
   IConfig,
+  ProxyPass,
   ReverseProxyCache as ReverseProxyCacheConfig,
 } from "./server/contracts.js";
 import { DeleteSystemPlugin } from "./server/plugins/DeleteSystemPlugin.js";
@@ -17,6 +18,7 @@ import { deleteHandler } from "./server/deleteHandler.js";
 import { asConfig } from "./server/fun/asConfig.js";
 import { extend } from "./server/fun/extend.js";
 import { ShutdownSystemPlugin } from "./server/plugins/ShutdownSystemPlugin.js";
+import { AddProxySystemPlugin } from "./server/plugins/AddProxySystemPlugin.js";
 
 export class Server {
   public cache: Db | null = null;
@@ -27,6 +29,7 @@ export class Server {
   private config: ReverseProxyCacheConfig;
   private systemPlugins = [
     new DeleteSystemPlugin(this),
+    new AddProxySystemPlugin(this),
     new AddMockResponseSystemPlugin(this),
     new ShutdownSystemPlugin(this),
   ];
@@ -43,6 +46,11 @@ export class Server {
     this.config = config["reverse-proxy-cache"];
 
     verbose(JSON.stringify(this.config, null, " "));
+  }
+
+  addProxy(proxyInfo: ProxyPass) {
+    const proxyPass = this.config["proxy-pass"]!;
+    return proxyPass.push(proxyInfo);
   }
 
   private verbose(...args: string[]) {

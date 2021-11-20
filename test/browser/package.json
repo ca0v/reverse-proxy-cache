@@ -1,0 +1,17 @@
+{
+  "name": "browser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "mocha.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/chai": "^4.2.22",
+    "chai": "^4.3.4",
+    "esbuild": "^0.13.14"
+  }
+}
