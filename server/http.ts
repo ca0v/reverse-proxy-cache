@@ -22,7 +22,7 @@ function asBody(data: string | Array<number>) {
 }
 
 export class Http {
-  constructor(private cache: IDb) { }
+  constructor(private cache: IDb) {}
 
   public async invokeDelete(
     url: ProxyInfo,
@@ -94,11 +94,17 @@ export class Http {
         //setHeaders(res, result.headers);
         //removeHeader(res, "Content-Length");
         setHeaders(res, {
-          "Content-Type": getHeader(result.headers, "content-type", "reverse-proxy-cache/text"),
+          "Content-Type": getHeader(
+            result.headers,
+            "content-type",
+            "reverse-proxy-cache/text"
+          ),
           "Access-Control-Allow-Credentials": "true",
-          "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
+          "Access-Control-Allow-Origin":
+            req.headers.origin || req.headers.referer || "localhost",
           "Access-Control-Allow-Methods": <string>req.method,
-          "Access-Control-Allow-Headers": "Content-Type,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Credentials"
+          "Access-Control-Allow-Headers":
+            "Content-Type,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Credentials",
         });
 
         verbose("\n\n\nfinal response headers ***********************");
@@ -150,11 +156,17 @@ export class Http {
       dumpHeaders(resultHeaders);
 
       setHeaders(res, {
-        "Content-Type": getHeader(result.headers, "Content-Type", "reverse-proxy/unknown"),
+        "Content-Type": getHeader(
+          result.headers,
+          "Content-Type",
+          "reverse-proxy/unknown"
+        ),
         "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Headers": resultHeaders["access-control-allow-headers"] || "",
+        "Access-Control-Allow-Headers":
+          resultHeaders["access-control-allow-headers"] || "",
         "Access-Control-Allow-Methods": req.method || "GET",
-        "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
+        "Access-Control-Allow-Origin":
+          req.headers.origin || req.headers.referer || "localhost",
       });
 
       verbose(`outbound response headers`);
@@ -250,9 +262,10 @@ export class Http {
                 // the value.headers are probably stale, should probably attempt to heal them
                 setHeaders(res, {
                   "Access-Control-Allow-Credentials": "true",
-                  "Access-Control-Allow-Origin": req.headers.origin || req.headers.referer || "localhost",
+                  "Access-Control-Allow-Origin":
+                    req.headers.origin || req.headers.referer || "localhost",
                   "Access-Control-Allow-Methods": req.method || "OPTIONS,POST",
-                  "Access-Control-Allow-Headers": ""
+                  "Access-Control-Allow-Headers": "",
                 });
 
                 verbose(
@@ -264,10 +277,7 @@ export class Http {
                 );
 
                 res.statusMessage = value.statusMessage;
-                res.writeHead(
-                  value.statusCode || 200,
-                  value.headers
-                );
+                res.writeHead(value.statusCode || 200, value.headers);
 
                 value.body = this.runProcessors(url, value.body) as string;
                 res.write(value.body);
@@ -316,12 +326,14 @@ export class Http {
             good(value.body);
             return;
           } catch (ex) {
-            verbose("failed to proxy POST request: ", ex);
+            res.statusCode = 500;
+            res.statusMessage = verbose(
+              "failed to proxy POST request: ",
+              ex
+            ).join();
             res.end();
-            bad(ex);
           }
         });
     });
   }
 }
-
