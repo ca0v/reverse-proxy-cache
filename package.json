@@ -30,6 +30,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^15.0.0",
     "@types/got": "^9.4.4",
     "@types/http-proxy": "^1.17.0",
     "@types/mocha": "^5.2.7",
