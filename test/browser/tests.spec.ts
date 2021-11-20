@@ -2,7 +2,7 @@ declare var assert: any;
 
 async function postMockData(data: {
   data: number | string | object;
-  method?: string;
+  method?: "GET" | "POST";
   url: string;
 }) {
   let stringData = data.data;
@@ -31,25 +31,56 @@ async function postRegisterProxy(data: {
 }
 
 describe("CORS", () => {
-  before(() => {
+  before(async () => {
     // register a site as a proxy
-    postRegisterProxy({
+    await postRegisterProxy({
       about: "Register a proxy for unit test",
-      baseUri: "/mock/acme",
+      baseUri: "/mock/acme/",
       proxyUri: "https://bogus.acme.com/",
     });
 
     // inject some mock data
-    postMockData({
+    await postMockData({
       data: "this is a test",
       url: "https://bogus.acme.com/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
     });
+
+    false &&
+      (await postMockData({
+        method: "POST",
+        data: "POST:this is a test",
+        url: "https://bogus.acme.com/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
+      }));
   });
 
   it("CORS", async () => {
     const response = await fetch(
-      "http://localhost:3002/mock/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin"
+      "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin"
     );
     assert.ok(response.ok, "Response is ok");
+    const data = await response.text();
+    assert.equal(data, "this is a test");
+  });
+
+  it("CORS preflight GET", async () => {
+    const response = await fetch(
+      "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
+      {
+        mode: "cors",
+        credentials: "include",
+      }
+    );
+    assert.ok(response.ok, "Response is ok");
+    const data = await response.text();
+    assert.equal(data, "this is a test");
+  });
+
+  it("CRASHES PROXY SERVER", async () => {
+    const response = await fetch(
+      "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
+      {
+        method: "POST",
+      }
+    );
   });
 });
