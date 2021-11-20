@@ -31,16 +31,16 @@ async function postRegisterProxy(data: {
 }
 
 describe("CORS", () => {
-  before(() => {
+  before(async () => {
     // register a site as a proxy
-    postRegisterProxy({
+    await postRegisterProxy({
       about: "Register a proxy for unit test",
-      baseUri: "/mock/acme",
+      baseUri: "/mock/acme/",
       proxyUri: "https://bogus.acme.com/",
     });
 
     // inject some mock data
-    postMockData({
+    await postMockData({
       data: "this is a test",
       url: "https://bogus.acme.com/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
     });
@@ -48,8 +48,10 @@ describe("CORS", () => {
 
   it("CORS", async () => {
     const response = await fetch(
-      "http://localhost:3002/mock/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin"
+      "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin"
     );
     assert.ok(response.ok, "Response is ok");
+    const data = await response.text();
+    assert.equal(data, "this is a test");
   });
 });
