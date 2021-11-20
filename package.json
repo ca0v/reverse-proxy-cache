@@ -11,6 +11,11 @@
   "imports": {
     "#@app/*": "./bin/*"
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
   "scripts": {
     "lint": "eslint ./built",
     "test": "mocha ./bin/test/test.js -b",
