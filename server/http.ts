@@ -39,7 +39,21 @@ export class Http {
     res: ServerResponse
   ) {
     console.assert(req.method === "OPTIONS");
-    return this.invoke(url, req, res);
+
+    const origin = req.headers["origin"];
+    const accessControlRequestMethod =
+      req.headers["access-control-request-method"];
+    const accessControlRequestHeaders =
+      req.headers["access-control-request-headers"];
+
+    setHeaders(res, {
+      "access-control-allow-origin": origin,
+      "access-control-allow-methods": accessControlRequestMethod,
+      "access-control-allow-headers": accessControlRequestHeaders,
+      "Access-Control-Max-Age": 86400,
+    });
+    dumpHeaders(res.getHeaders());
+    res.end();
   }
 
   public async invokeGet(

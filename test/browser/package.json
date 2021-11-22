@@ -4,7 +4,7 @@
   "description": "",
   "main": "mocha.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch:build": "esbuild tests.spec.ts --outfile=tests.spec.js --watch"
   },
   "keywords": [],
   "author": "",

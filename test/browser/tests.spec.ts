@@ -1,5 +1,11 @@
 declare var assert: any;
 
+async function sleep(ms = 1000) {
+  return new Promise<void>((good, bad) => {
+    setTimeout(() => good(), ms);
+  });
+}
+
 async function postMockData(data: {
   data: number | string | object;
   method?: "GET" | "POST";
@@ -45,12 +51,25 @@ describe("CORS", () => {
       url: "https://bogus.acme.com/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
     });
 
-    false &&
-      (await postMockData({
-        method: "POST",
-        data: "POST:this is a test",
-        url: "https://bogus.acme.com/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
-      }));
+    await postMockData({
+      method: "POST",
+      data: "POST:this is a test",
+      url: "https://bogus.acme.com/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
+    });
+  });
+
+  it("CRASHES PROXY SERVER", async () => {
+    try {
+      await fetch(
+        "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
+        {
+          method: "POST",
+        }
+      );
+      assert.fail("Exception expected");
+    } catch (ex) {
+      assert.equal(ex, "TypeError: Failed to fetch");
+    }
   });
 
   it("CORS", async () => {
@@ -62,7 +81,7 @@ describe("CORS", () => {
     assert.equal(data, "this is a test");
   });
 
-  it("CORS preflight GET", async () => {
+  it("CORS credentials GET", async () => {
     const response = await fetch(
       "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
       {
@@ -75,12 +94,20 @@ describe("CORS", () => {
     assert.equal(data, "this is a test");
   });
 
-  it("CRASHES PROXY SERVER", async () => {
+  it("CORS preflight GET", async () => {
+    // server is not returning access-control-allow-methods
+    await sleep(100);
+    // the presence of a Content-Type header causes a CORS error
     const response = await fetch(
       "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
       {
-        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
+    assert.ok(response.ok, "Response is ok");
+    const data = await response.text();
+    assert.equal(data, "this is a test");
   });
 });
