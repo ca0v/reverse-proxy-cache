@@ -39,6 +39,7 @@ export class Http {
     res: ServerResponse
   ) {
     console.assert(req.method === "OPTIONS");
+    dumpHeaders(req.headers);
 
     const origin = req.headers["origin"];
     const accessControlRequestMethod =
@@ -51,6 +52,7 @@ export class Http {
       "access-control-allow-methods": accessControlRequestMethod,
       "access-control-allow-headers": accessControlRequestHeaders,
       "Access-Control-Max-Age": 86400,
+      "access-control-allow-credentials": "true",
     });
     dumpHeaders(res.getHeaders());
     res.end();

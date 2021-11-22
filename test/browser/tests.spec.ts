@@ -85,8 +85,14 @@ describe("CORS", () => {
     const response = await fetch(
       "http://localhost:3002/mock/acme/ips/11.2/nextgen/api/endpoints/agencymaps/rmb-maplet-mixin",
       {
-        mode: "cors",
+        method: "GET",
+        body: null,
+        //mode: "cors",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          Accept: "application/json",
+        },
       }
     );
     assert.ok(response.ok, "Response is ok");
