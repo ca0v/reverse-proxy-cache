@@ -11,6 +11,7 @@ import { HttpsGet } from "./fun/http-get.js";
 import { ProxyInfo } from "./contracts.js";
 import { getHeader, removeHeader, setHeaders } from "./setHeaders.js";
 import { dumpHeaders } from "#@app/test/dumpHeaders.js";
+import { apply } from "./fun/access-control-allow.js";
 
 let got = new HttpsGet();
 
@@ -40,20 +41,7 @@ export class Http {
   ) {
     console.assert(req.method === "OPTIONS");
     dumpHeaders(req.headers);
-
-    const origin = req.headers["origin"];
-    const accessControlRequestMethod =
-      req.headers["access-control-request-method"];
-    const accessControlRequestHeaders =
-      req.headers["access-control-request-headers"];
-
-    setHeaders(res, {
-      "access-control-allow-origin": origin,
-      "access-control-allow-methods": accessControlRequestMethod,
-      "access-control-allow-headers": accessControlRequestHeaders,
-      "Access-Control-Max-Age": 86400,
-      "access-control-allow-credentials": "true",
-    });
+    apply(req, res);
     dumpHeaders(res.getHeaders());
     res.end();
   }
@@ -109,18 +97,13 @@ export class Http {
 
         //setHeaders(res, result.headers);
         //removeHeader(res, "Content-Length");
+        apply(req, res);
         setHeaders(res, {
           "Content-Type": getHeader(
             result.headers,
             "content-type",
             "reverse-proxy-cache/text"
           ),
-          "Access-Control-Allow-Credentials": "true",
-          "Access-Control-Allow-Origin":
-            req.headers.origin || req.headers.referer || "localhost",
-          "Access-Control-Allow-Methods": <string>req.method,
-          "Access-Control-Allow-Headers":
-            "Content-Type,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Credentials",
         });
 
         verbose("\n\n\nfinal response headers ***********************");
@@ -171,18 +154,13 @@ export class Http {
       verbose(`inbound response headers`);
       dumpHeaders(resultHeaders);
 
+      apply(req, res);
       setHeaders(res, {
         "Content-Type": getHeader(
           result.headers,
           "Content-Type",
           "reverse-proxy/unknown"
         ),
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Headers":
-          resultHeaders["access-control-allow-headers"] || "",
-        "Access-Control-Allow-Methods": req.method || "GET",
-        "Access-Control-Allow-Origin":
-          req.headers.origin || req.headers.referer || "localhost",
       });
 
       verbose(`outbound response headers`);
@@ -276,13 +254,7 @@ export class Http {
 
                 setHeaders(res, value.headers);
                 // the value.headers are probably stale, should probably attempt to heal them
-                setHeaders(res, {
-                  "Access-Control-Allow-Credentials": "true",
-                  "Access-Control-Allow-Origin":
-                    req.headers.origin || req.headers.referer || "localhost",
-                  "Access-Control-Allow-Methods": req.method || "OPTIONS,POST",
-                  "Access-Control-Allow-Headers": "",
-                });
+                apply(req, res);
 
                 verbose(
                   `outbound response headers: ${JSON.stringify(

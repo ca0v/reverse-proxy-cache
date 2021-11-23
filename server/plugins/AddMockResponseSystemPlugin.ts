@@ -4,13 +4,14 @@ import type { Server } from "../../server.js";
 import { stringify, verbose as dump, verbose } from "../fun/stringify.js";
 import { lowercase } from "../fun/lowercase.js";
 import { setHeaders } from "../setHeaders.js";
+import { apply } from "../fun/access-control-allow.js";
 
 function asStatus(message: string) {
   return JSON.stringify({ status: message });
 }
 
 export class AddMockResponseSystemPlugin {
-  constructor(private server: Server) { }
+  constructor(private server: Server) {}
 
   process(req: IncomingMessage, res: ServerResponse) {
     if (req.method !== "POST") {
@@ -24,12 +25,9 @@ export class AddMockResponseSystemPlugin {
     }
 
     verbose("AddMockResponseSystemPlugin");
+    apply(req, res);
     setHeaders(res, {
       "Content-Type": req.headers["content-type"] || "add-mock/unknown",
-      "Access-Control-Allow-Credentials": "true",
-      "Access-Control-Allow-Headers": "",
-      "Access-Control-Allow-Methods": "POST",
-      "Access-Control-Allow-Origin": <string>(req.headers.origin || req.headers.referer || "localhost"),
     });
 
     switch (query.mock) {

@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from "http";
 import type { Server } from "../../server.js";
 import { setHeaders } from "../setHeaders.js";
 import { stringify, verbose as dump, verbose } from "../fun/stringify.js";
+import { apply } from "../fun/access-control-allow.js";
 
 export class ShutdownSystemPlugin {
   constructor(private server: Server) {}
@@ -18,15 +19,8 @@ export class ShutdownSystemPlugin {
       return false;
     }
     verbose("ShutdownSystemPlugin");
-    setHeaders(res, {
-      "Content-Type": "application/text",
-      "Access-Control-Allow-Credentials": "true",
-      "Access-Control-Allow-Methods": "GET",
-      "Access-Control-Allow-Headers": "",
-      "Access-Control-Allow-Origin": <string>(
-        (req.headers.origin || req.headers.referer || "localhost")
-      ),
-    });
+    apply(req, res);
+    setHeaders(res, { "Content-Type": "application/text" });
     dumpHeaders(res.getHeaders());
     res.write(`shutdown`);
     res.end();

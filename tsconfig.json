@@ -8,6 +8,7 @@
     "sourceMap": false,
     "outDir": "./bin",
     "strict": true,
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "baseUrl": "./",
     "paths": {
