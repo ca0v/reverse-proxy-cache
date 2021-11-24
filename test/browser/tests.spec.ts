@@ -1,4 +1,4 @@
-declare var assert: any;
+import { assert } from "chai";
 
 async function sleep(ms = 1000) {
   return new Promise<void>((good, bad) => {
