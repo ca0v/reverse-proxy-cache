@@ -61,6 +61,11 @@
     "port": "3002",
     "reverse-proxy-db": "ipsunittests.sqlite",
     "verbose": true,
+    "isBinaryMimeType": [
+      "image/",
+      "binary/",
+      "application/x-protobuf"
+    ],
     "proxy-pass": [
       {
         "about": "this proxy is used to...",

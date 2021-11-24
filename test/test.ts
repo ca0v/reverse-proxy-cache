@@ -12,4 +12,4 @@ import "./server.js";
 import "./server/ags-mapserver-499.js";
 import "./server/shutdown-command.js";
 import "./download-image.js";
-import "./server/bpf.js";
+import "./server/pbf.js";

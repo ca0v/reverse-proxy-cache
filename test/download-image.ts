@@ -10,6 +10,7 @@ const config: IConfig = {
   "reverse-proxy-cache": {
     verbose: true,
     port: `${proxyPort}`,
+    isBinaryMimeType: ["image/"],
     "reverse-proxy-db": "unittest.sqlite",
     "proxy-pass": [
       {

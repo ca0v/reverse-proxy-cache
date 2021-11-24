@@ -13,6 +13,7 @@ describe("Tests PBF format", () => {
       "reverse-proxy-cache": {
         verbose: true,
         port: `${proxyPort}`,
+        isBinaryMimeType: ["application/x-protobuf"],
         "reverse-proxy-db": "unittest.sqlite",
         "proxy-pass": [
           {

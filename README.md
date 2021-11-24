@@ -78,6 +78,7 @@ interface IConfig {
   - additional caching strategies, see https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/
   - organize code using patterns from popular node projects
 - v1.0.7
+- - adds `isBinaryMimeType` to configure what gets encoded as text
   - adds `/system?proxy=add` to temporarily add a new proxy
   - adds `/system?shutdown` to shutdown server
 - v1.0.6
@@ -101,7 +102,46 @@ interface IConfig {
 
 Issue a GET request to /system?shutdown
 
+### Add a proxy (v1.0.7)
+
+Issue a POST request to /system?proxy=add
+
+```
+{
+  about: string;
+  baseUri: string;
+  proxyUri: string;
+}
+```
+
+#### Example
+
+```
+async function postRegisterProxy(data: {
+  about: string;
+  baseUri: string;
+  proxyUri: string;
+}) {
+  await fetch("http://localhost:3002/system?proxy=add", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+```
+
 ### Inject mock data (v1.0.5)
+
+Issue a POST request to /system?mock=add
+
+```
+{
+  method: "GET|POST",
+  url: string,
+  data: string|number[],
+}
+```
+
+#### Example
 
 ```
 const response1 = await got.post(

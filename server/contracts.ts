@@ -35,6 +35,7 @@ export interface ReverseProxyCache {
   offline?: boolean;
   port: string;
   verbose: boolean;
+  isBinaryMimeType?: Array<string>;
   "reverse-proxy-db": string;
   "proxy-pass"?: Array<ProxyPass>;
 }

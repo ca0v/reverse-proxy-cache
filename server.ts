@@ -20,6 +20,8 @@ import { extend } from "./server/fun/extend.js";
 import { ShutdownSystemPlugin } from "./server/plugins/ShutdownSystemPlugin.js";
 import { AddProxySystemPlugin } from "./server/plugins/AddProxySystemPlugin.js";
 
+import { binaryMimeTypes } from "./server/config/mimeTypes.js";
+
 export class Server {
   public cache: Db | null = null;
   public proxy: Proxy | null = null;
@@ -44,6 +46,10 @@ export class Server {
     if (!config["reverse-proxy-cache"]["proxy-pass"])
       throw "missing configuration: reverse-proxy-cache/proxy-pass not found";
     this.config = config["reverse-proxy-cache"];
+
+    if (this.config.isBinaryMimeType) {
+      binaryMimeTypes.push(...this.config.isBinaryMimeType);
+    }
 
     verbose(JSON.stringify(this.config, null, " "));
   }

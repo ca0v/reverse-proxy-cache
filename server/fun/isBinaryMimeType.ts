@@ -1,5 +1,5 @@
+import { binaryMimeTypes } from "../config/mimeTypes.js";
+
 export function isBinaryMimeType(mimeType: string) {
-  return ["image/", "binary/", "application/x-protobuf"].some((v) =>
-    mimeType.startsWith(v)
-  );
+  return binaryMimeTypes.some((v) => mimeType.startsWith(v));
 }
