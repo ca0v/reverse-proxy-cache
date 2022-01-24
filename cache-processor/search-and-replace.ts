@@ -1,7 +1,7 @@
 /*
 When making an Export request the service returns an absolute
 url to the resulting image.
-https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export
+https://usalvwdgis1.acme.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export
  */
 
 import { ProxyInfo, IProcessor, ProxyPass } from "@app/server/contracts";

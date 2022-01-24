@@ -45,8 +45,7 @@ describe("agol raw post", () => {
         host: "services7.arcgis.com",
         port: 443,
         method: "POST",
-        path:
-          "/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
+        path: "/k0UprFPHKieFB9UY/arcgis/rest/services/Feature_Service_Test/FeatureServer",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           "Content-Length": data.length,
@@ -167,7 +166,7 @@ describe("agol", () => {
 });
 
 // this is failing with the following response:
-// Invalid request <br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens?request=gettoken&username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/generateToken?username=username&password=password&<br>Usage: https://usalvwdgis1.infor.com:6443/arcgis/tokens/gettoken.html<br>
+// Invalid request <br>Usage: https://usalvwdgis1.acme.com:6443/arcgis/tokens?request=gettoken&username=username&password=password&<br>Usage: https://usalvwdgis1.acme.com:6443/arcgis/tokens/generateToken?username=username&password=password&<br>Usage: https://usalvwdgis1.acme.com:6443/arcgis/tokens/gettoken.html<br>
 // when using sampleserver5 I get ETIMEOUT although service works from the browser.
 describe("server/ags", () => {
   const proxyPort = 3004;
