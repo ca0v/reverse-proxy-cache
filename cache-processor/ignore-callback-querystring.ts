@@ -3,7 +3,7 @@ import { ProxyInfo, IProcessor } from "#@app/server/contracts";
 class Processor implements IProcessor {
   name = "ignore-callback-querystring";
   regex = /[?&]callback=([^&]*)/;
-  regexFn = /[\w_][\w\d_]*\(/; // foo(
+  regexFn = /[\w_][\w\d_\.]*\(/; // foo.bar_baz2(
 
   computeCacheKey(request: string) {
     return request.replace(this.regex, "");
