@@ -149,7 +149,7 @@ const response1 = await got.post(
   {
     body: querystring.stringify({
       method: "GET",
-      url: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md",
+      url: "https://usgvncalix02.acme.com/ips_112/client/images/mapdrawer/mapicons/README.md",
       data: "this data was injected as a mock",
     }),
   }

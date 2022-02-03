@@ -48,7 +48,7 @@ describe("hits the /system endpoint", () => {
         {
           baseUri: "/mock/test/MapIcons/",
           proxyUri:
-            "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/",
+            "https://usgvncalix02.acme.com/ips_112/client/images/mapdrawer/mapicons/",
           about: "used to test image caching",
         },
       ],
@@ -79,7 +79,7 @@ describe("hits the /system endpoint", () => {
 
     const request = {
       method: "GET",
-      url: "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/README.md",
+      url: "https://usgvncalix02.acme.com/ips_112/client/images/mapdrawer/mapicons/README.md",
       data: mockData,
     };
     const response1 = await addMockData(request);

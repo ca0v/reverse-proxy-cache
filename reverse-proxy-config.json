@@ -21,18 +21,18 @@
         "proxyUri": "https://matterhornvs.co.pierce.wa.us/spatialservices/rest/services/Sewer/IPSBilling/MapServer"
       },
       {
-        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+        "about": "requests to /mock redirect to https://usalvwdgis1.acme.com:6443",
         "baseUri": "/mock/ags",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis"
       },
       {
-        "about": "requests to /mock redirect to https://usalvwdgis1.infor.com:6443",
+        "about": "requests to /mock redirect to https://usalvwdgis1.acme.com:6443",
         "baseUri": "/mock/ags/rest/services/IPS112/QA112AU/MapServer/export",
         "cache-processor": "ignore-callback-querystring,search-and-replace",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/rest/services/IPS112/QA112AU/MapServer/export",
         "search-and-replace": {
-          "https://usalvwdgis1.infor.com:6443/arcgis/rest/": "http://localhost:3002/mock/ags/rest/"
+          "https://usalvwdgis1.acme.com:6443/arcgis/rest/": "http://localhost:3002/mock/ags/rest/"
         }
       },
       {
@@ -48,18 +48,18 @@
       {
         "about": "proxy ips to mock service responses for routing",
         "baseUri": "/mock/ips/11.2/api",
-        "proxyUri": "http://usgvncalix01.infor.com/IPS112/api"
+        "proxyUri": "http://usgvncalix01.acme.com/IPS112/api"
       },
       {
         "about": "do not cache api/auth requests",
         "baseUri": "/mock/ips/11.2/api/auth",
         "no-cache": true,
-        "proxyUri": "http://usgvncalix01.infor.com/IPS112/api/auth"
+        "proxyUri": "http://usgvncalix01.acme.com/IPS112/api/auth"
       },
       {
         "about": "proxy ips to mock service responses for routing",
         "baseUri": "/mock/ips/11.2/nextgen",
-        "proxyUri": "https://usgvncalix01.infor.com/IPS112"
+        "proxyUri": "https://usgvncalix01.acme.com/IPS112"
       },
       {
         "about": "requests intercept dojo",
@@ -137,30 +137,30 @@
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/rest/",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/rest/"
+        "proxyUri": "http://usalvwdgis1.acme.com:6080/arcgis/rest/"
       },
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/rest/services/annotations/",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
       },
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/rest/services/annotations/FeatureServer",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
       },
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/soap/rest/services/IPS112/SQL2v112/MapServer",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
       },
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/soap/services/",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/services/"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/services/"
       },
       {
         "about": "tests token generation for OAUTH2",
@@ -170,7 +170,7 @@
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/test/MapIcons/",
-        "proxyUri": "https://usgvncalix01.infor.com/IPS112/client/images/MapDrawer/MapIcons/"
+        "proxyUri": "https://usgvncalix01.acme.com/IPS112/client/images/MapDrawer/MapIcons/"
       },
       {
         "about": "agol/ArcGIS/rest/services/World_Street_Map/MapServer",

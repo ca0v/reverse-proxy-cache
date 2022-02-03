@@ -16,7 +16,7 @@ const config: IConfig = {
       {
         baseUri: "/mock/test/MapIcons/",
         proxyUri:
-          "https://usgvncalix02.infor.com/ips_112/client/images/mapdrawer/mapicons/",
+          "https://usgvncalix02.acme.com/ips_112/client/images/mapdrawer/mapicons/",
         about: "used to test image caching",
       },
     ],

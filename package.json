@@ -155,19 +155,19 @@
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/rest/",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "http://usalvwdgis1.infor.com:6080/arcgis/rest/"
+        "proxyUri": "http://usalvwdgis1.acme.com:6080/arcgis/rest/"
       },
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/rest/services/annotations/FeatureServer",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/rest/services/ANNOTATIONS/IPS_ANNOTATION_US/"
       },
       {
         "about": "this proxy is used to...",
         "baseUri": "/mock/proxy/ags/soap/rest/services/IPS112/SQL2v112/MapServer",
         "cache-processor": "ignore-callback-querystring",
-        "proxyUri": "https://usalvwdgis1.infor.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
+        "proxyUri": "https://usalvwdgis1.acme.com:6443/arcgis/rest/services/IPS112/SQL2v112/MapServer"
       },
       {
         "about": "tests token generation for OAUTH2",
