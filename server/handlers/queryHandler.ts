@@ -2,8 +2,12 @@ import * as fs from "fs";
 import type { IConfig } from "../contracts.js";
 import { Db } from "../db.js";
 
-export async function queryHandler(switchName: string, sqlQuery: string) {
+export async function queryHandler(
+  switchName: string,
+  ...sqlQueryTokens: string[]
+) {
   if ("--query" !== switchName) throw "invalid switch";
+  const sqlQuery = sqlQueryTokens?.join(" ");
   if (!sqlQuery) throw `you must specify a query as the 1st argument`;
 
   // load configuration

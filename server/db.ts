@@ -85,11 +85,13 @@ export class Db implements IDb {
   // how to return a query result?  Could be a delete, insert, select, etc.
   // purpose is simply to run any sql without needing sqlite3 cli
   async executeQuery(sqlQuery: string) {
+    verbose(`executing query: ${sqlQuery}`);
     const cmd = this.db.prepare(sqlQuery);
     return new Promise<void>((good, bad) => {
-      cmd.run((err) => {
+      cmd.get((err, row) => {
         cmd.finalize();
-        err ? bad(err) : good();
+        verbose(JSON.stringify(row));
+        err ? bad(err) : good(row);
       });
     });
   }
