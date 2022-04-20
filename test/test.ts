@@ -1,4 +1,5 @@
 import "./args-test.js";
+import "./handler-test.js";
 import "./server/systemops.js";
 import "./server/ags-pbf.js";
 import "./thirdparty.js";

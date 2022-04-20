@@ -21,6 +21,7 @@ Reverse Proxy with Caching to facilitate service oriented unit tests
 - `npx reverse-proxy-cache --help`
 - `npx reverse-proxy-cache [package.json]`
 - `npx reverse-proxy-cache --add package.json https://www.arcgis.com arcgis`
+- `npx reverse-proxy-cache --query [sql]`
 
 ## Configure
 
@@ -75,10 +76,16 @@ interface IConfig {
 ## History
 
 - future
+
   - additional caching strategies, see https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/
   - organize code using patterns from popular node projects
+
+- v1.0.8
+
+  - adds ability to run arbitrary query via `--query=[sql]` command
+
 - v1.0.7
-- - adds `isBinaryMimeType` to configure what gets encoded as text
+  - adds `isBinaryMimeType` to configure what gets encoded as text
   - adds `/system?proxy=add` to temporarily add a new proxy
   - adds `/system?shutdown` to shutdown server
 - v1.0.6

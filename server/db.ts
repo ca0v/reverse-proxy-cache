@@ -11,7 +11,7 @@ export interface IDb {
 }
 
 export class Db implements IDb {
-  private db: any; //sqlite3.Database;
+  private db: sqlite.Database;
 
   private constructor(config: ReverseProxyCache) {
     let dbFile = config["reverse-proxy-db"];
@@ -70,15 +70,27 @@ export class Db implements IDb {
 
   delete(statusCode: string) {
     verbose("db.delete status code", statusCode);
-    let cmd = this.db.prepare(
+    const cmd = this.db.prepare(
       `DELETE FROM cache WHERE res LIKE '%"statusCode": ${statusCode}%'`
     );
-    let p = new Promise((resolve, reject) => {
+    const p = new Promise((resolve, reject) => {
       cmd.run((err: string) => {
         cmd.finalize();
         err ? reject(err) : resolve(err);
       });
     });
     return p;
+  }
+
+  // how to return a query result?  Could be a delete, insert, select, etc.
+  // purpose is simply to run any sql without needing sqlite3 cli
+  async executeQuery(sqlQuery: string) {
+    const cmd = this.db.prepare(sqlQuery);
+    return new Promise<void>((good, bad) => {
+      cmd.run((err) => {
+        cmd.finalize();
+        err ? bad(err) : good();
+      });
+    });
   }
 }

@@ -13,8 +13,9 @@ import { AddMockResponseSystemPlugin } from "./server/plugins/AddMockResponseSys
 import { verbose as dump, verbose } from "./server/fun/stringify.js";
 import { Proxy } from "./server/proxy.js";
 import { Http } from "./server/http.js";
-import { addHandler } from "./server/addHandler.js";
-import { deleteHandler } from "./server/deleteHandler.js";
+import { addHandler } from "./server/handlers/addHandler.js";
+import { deleteHandler } from "./server/handlers/deleteHandler.js";
+import { queryHandler } from "./server/handlers/queryHandler.js";
 import { asConfig } from "./server/fun/asConfig.js";
 import { extend } from "./server/fun/extend.js";
 import { ShutdownSystemPlugin } from "./server/plugins/ShutdownSystemPlugin.js";
@@ -65,8 +66,7 @@ export class Server {
   }
 
   async start() {
-    let config = this.config;
-
+    const config = this.config;
     const cache = await Db.init(config);
     this.cache = cache;
     if (!cache) throw "db failed to return a database connection";
@@ -165,6 +165,7 @@ const handlers: Dictionary<(...args: string[]) => void> = {
   init: initHandler,
   add: addHandler,
   delete: deleteHandler,
+  query: queryHandler,
 };
 
 export async function run(args: string[] | IConfig) {
