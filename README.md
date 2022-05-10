@@ -179,6 +179,7 @@ got.get(`http://localhost:3001/system?delete=504`);
 
 ## Issues
 
+- turn "verbose" into a command line option and config file option that is globally available
 - content-type needs to be transmitted in binary format (not converted to json)
 
   - `application/font-sfnt`

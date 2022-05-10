@@ -10,7 +10,7 @@ import type {
 } from "./server/contracts.js";
 import { DeleteSystemPlugin } from "./server/plugins/DeleteSystemPlugin.js";
 import { AddMockResponseSystemPlugin } from "./server/plugins/AddMockResponseSystemPlugin.js";
-import { verbose as dump, verbose } from "./server/fun/stringify.js";
+import { verbose as dump } from "./server/fun/stringify.js";
 import { Proxy } from "./server/proxy.js";
 import { Http } from "./server/http.js";
 import { addHandler } from "./server/handlers/addHandler.js";
@@ -52,7 +52,7 @@ export class Server {
       binaryMimeTypes.push(...this.config.isBinaryMimeType);
     }
 
-    verbose(JSON.stringify(this.config, null, " "));
+    this.verbose(JSON.stringify(this.config, null, " "));
   }
 
   addProxy(proxyInfo: ProxyPass) {

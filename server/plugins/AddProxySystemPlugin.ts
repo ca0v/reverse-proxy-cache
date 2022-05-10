@@ -1,8 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import * as url from "url";
 import type { Server } from "../../server.js";
-import { stringify, verbose as dump, verbose } from "../fun/stringify.js";
-import { lowercase } from "../fun/lowercase.js";
+import { verbose as dump, verbose } from "../fun/stringify.js";
 import { setHeaders } from "../setHeaders.js";
 import { apply } from "../fun/access-control-allow.js";
 
